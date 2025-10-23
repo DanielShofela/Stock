@@ -14,6 +14,7 @@ import BottomNav from './components/BottomNav';
 import SideNav from './components/SideNav';
 import WalkthroughGuide, { type Step as WalkthroughStep } from './components/WalkthroughGuide';
 import type { Product, StockMovement, OverduePayment, Warehouse, Customer, Order, OrderItem } from './types';
+import { mockOverduePayments } from './data/mock';
 
 export type Page = 'dashboard' | 'products' | 'orders' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'add-order';
 
@@ -94,7 +95,7 @@ const App: React.FC = () => {
   
   const [products, setProducts] = useState<Product[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
-  const [overduePayments, setOverduePayments] = useState<OverduePayment[]>([]);
+  const [overduePayments, setOverduePayments] = useState<OverduePayment[]>(mockOverduePayments);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -131,9 +132,120 @@ const App: React.FC = () => {
     }
   }, [session]);
 
+  const seedDatabase = async () => {
+    if (!session?.user || warehouses.length === 0) return;
+    console.log("Database is empty, seeding initial data...");
+
+    const userId = session.user.id;
+    const warehouseId = warehouses[0].id;
+
+    // 1. Seed Customers
+    const customersToSeed = [
+        { user_id: userId, name: 'Marie Dubois', email: 'marie.dubois@example.com', phone: '0612345678', address: '123 Rue de la Paix, 75001 Paris' },
+        { user_id: userId, name: 'Jean Martin', email: 'jean.martin@example.com', phone: '0687654321', address: '456 Avenue des Champs-Élysées, 75008 Paris' },
+    ];
+    const { data: seededCustomers, error: customerError } = await supabase.from('customers').insert(customersToSeed).select();
+    if (customerError) { console.error('Seeding customers failed:', customerError); return; }
+
+    // 2. Seed Products and Variants
+    const productsToSeed = [
+        {
+            user_id: userId, name: 'Sérum Éclat Vitamine C', sku: 'SER-VITC', category: 'Sérums', images: ['https://placehold.co/400x400/FFF0E5/FF6B00?text=Sérum'],
+            variants: [
+                { variant_name: '30ml', price: 3500, barcode: '370000000001', initial_quantity: 50, safety_stock: 10 },
+                { variant_name: '50ml', price: 5200, barcode: '370000000002', initial_quantity: 30, safety_stock: 5 },
+            ]
+        },
+        {
+            user_id: userId, name: 'Crème Hydratante Intense', sku: 'CRM-HYD', category: 'Crèmes', images: ['https://placehold.co/400x400/E5F4FF/0076BC?text=Crème'],
+            variants: [
+                { variant_name: '50ml', price: 2800, barcode: '370000000003', initial_quantity: 100, safety_stock: 20 },
+            ]
+        },
+        {
+            user_id: userId, name: 'Masque Purifiant Argile', sku: 'MSQ-ARG', category: 'Masques', images: ['https://placehold.co/400x400/E8F5E9/4CAF50?text=Masque'],
+            variants: [
+                { variant_name: '75ml', price: 2200, barcode: '370000000004', initial_quantity: 75, safety_stock: 15 },
+            ]
+        },
+    ];
+
+    for (const p of productsToSeed) {
+        const { variants, ...productData } = p;
+        const { data: newProduct, error: productError } = await supabase.from('products').insert(productData).select().single();
+        if (productError || !newProduct) { console.error('Error seeding product', p.name, productError); continue; }
+        
+        const variantInserts = variants.map(v => ({
+            product_id: newProduct.id,
+            variant_name: v.variant_name,
+            price: v.price,
+            barcode: v.barcode,
+        }));
+        const { data: newVariants, error: variantError } = await supabase.from('product_variants').insert(variantInserts).select();
+        if (variantError || !newVariants) { console.error('Error seeding variants for', p.name, variantError); continue; }
+
+        const stockLevelInserts = variants.map((v, i) => ({
+            variant_id: newVariants[i].id,
+            warehouse_id: warehouseId,
+            quantity: v.initial_quantity,
+            initial_quantity: v.initial_quantity,
+            safety_stock: v.safety_stock,
+            user_id: userId,
+        }));
+        await supabase.from('stock_levels').insert(stockLevelInserts);
+
+        const movementInserts = variants.map((v, i) => ({
+            variant_id: newVariants[i].id,
+            warehouse_id: warehouseId,
+            quantity: v.initial_quantity,
+            movement_type: 'in' as const,
+            reference: 'Stock initial',
+            user_id: userId,
+            product_name_cache: newProduct.name,
+            variant_name_cache: v.variant_name,
+            sku_cache: newProduct.sku,
+        }));
+        await supabase.from('stock_movements').insert(movementInserts);
+    }
+    console.log("Finished seeding products.");
+
+    const { data: serumVariant } = await supabase.from('product_variants').select('id, price, product_id').eq('variant_name', '30ml').limit(1).single();
+    const { data: serumProduct } = await supabase.from('products').select('name').eq('id', serumVariant?.product_id).single();
+
+    if (serumVariant && serumProduct && seededCustomers) {
+        const orderTotal = serumVariant.price * 1;
+        const { data: newOrder, error: orderError } = await supabase.from('orders').insert({
+            user_id: userId,
+            customer_id: seededCustomers[0].id,
+            customer_name: seededCustomers[0].name,
+            total_amount: orderTotal,
+            status: 'completed',
+        }).select().single();
+
+        if (newOrder && !orderError) {
+            await supabase.from('order_items').insert({
+                order_id: newOrder.id,
+                variant_id: serumVariant.id,
+                quantity: 1,
+                price: serumVariant.price,
+                product_name_cache: serumProduct.name,
+                variant_name_cache: '30ml',
+            });
+        }
+    }
+    console.log("Finished seeding sample order.");
+  }
+
+
   const fetchInitialData = async () => {
     setLoading(true);
     await fetchWarehouses(); // Must run first
+
+    const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true });
+    if (count === 0 && !error) {
+      await seedDatabase();
+    }
+
     await Promise.all([
       fetchProductsAndStock(),
       fetchMovements(),
@@ -171,6 +283,41 @@ const App: React.FC = () => {
         setWarehouses(data || []);
     }
   };
+  
+  const fetchCustomers = async () => {
+      const { data, error } = await supabase.from('customers').select('*');
+      if (error) console.error('Error fetching customers', error.message);
+      else setCustomers(data || []);
+  };
+
+  const fetchOrders = async () => {
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select(`*, order_items(*)`)
+        .order('order_date', { ascending: false });
+
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError.message);
+        setOrders([]);
+        return;
+      }
+      
+      const formattedOrders: Order[] = ordersData.map(o => ({
+        id: o.id,
+        customer_name: o.customer_name,
+        order_date: o.order_date,
+        status: o.status as Order['status'],
+        total_amount: o.total_amount,
+        items: (o.order_items || []).map((oi: any) => ({
+          id: oi.id,
+          product_name: oi.product_name_cache,
+          variant_name: oi.variant_name_cache,
+          quantity: oi.quantity,
+          price: oi.price,
+        })),
+      }));
+      setOrders(formattedOrders);
+    };
 
   const fetchProductsAndStock = async () => {
      const { data: productsData, error: productsError } = await supabase
@@ -286,54 +433,31 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchCustomers = async () => {
-    const { data, error } = await supabase.from('customers').select('*');
-    if (error) console.error('Error fetching customers', error.message);
-    else setCustomers(data || []);
-  };
-
-  const fetchOrders = async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        customers (name),
-        order_items (
-          *,
-          product_variants (variant_name, products(name))
-        )
-      `)
-      .order('order_date', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching orders:', error.message);
-    } else {
-      const formattedOrders: Order[] = data.map(o => ({
-        id: o.id,
-        customer_name: (o.customers as { name: string })?.name || 'Client Inconnu',
-        order_date: o.order_date,
-        status: o.status,
-        total_amount: o.total_amount,
-        items: o.order_items.map((oi: any) => ({
-          id: oi.id,
-          product_name: oi.product_variants.products.name,
-          variant_name: oi.product_variants.variant_name,
-          quantity: oi.quantity,
-          price: oi.price_at_time_of_order,
-        }))
-      }));
-      setOrders(formattedOrders);
-    }
-  };
-
   // --- REALTIME SUBSCRIPTIONS ---
   useEffect(() => {
     if (!session) return;
     
     const changes = supabase.channel('db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-        console.log('Change received!', payload)
-        fetchInitialData(); // Refetch all data on any change
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_movements' }, (payload) => {
+        fetchMovements();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+        fetchProductsAndStock();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, (payload) => {
+        fetchProductsAndStock();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_levels' }, (payload) => {
+        fetchProductsAndStock();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, (payload) => {
+        fetchCustomers();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+        fetchOrders();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, (payload) => {
+        fetchOrders();
       })
       .subscribe()
     
@@ -430,7 +554,8 @@ const App: React.FC = () => {
         const { error: movementsError } = await supabase.from('stock_movements').insert(movementInserts);
         if (movementsError) console.error('Error creating initial movements', movementsError.message);
     }
-
+    
+    await fetchProductsAndStock(); // Refresh product list
     setCurrentPage('products');
   };
 
@@ -480,62 +605,63 @@ const App: React.FC = () => {
         });
     if (insertError) console.error('Error logging movement:', insertError.message);
 
-    setCurrentPage('dashboard');
+    await Promise.all([fetchProductsAndStock(), fetchMovements()]);
   };
   
    const handleAddOrder = async (orderData: { customerName: string; items: { variantId: number; quantity: number; price: number }[]; total: number }) => {
     if (!session?.user || warehouses.length === 0) return;
+    const userId = session.user.id;
 
     // 1. Find or Create Customer
-    let customer;
-    const { data: existingCustomer } = await supabase.from('customers').select('id').eq('name', orderData.customerName).single();
+    let customerId: number;
+    const { data: existingCustomer } = await supabase.from('customers').select('id').ilike('name', orderData.customerName.trim()).single();
 
     if (existingCustomer) {
-        customer = existingCustomer;
+        customerId = existingCustomer.id;
     } else {
-        const { data: newCustomer, error: customerError } = await supabase
-            .from('customers')
-            .insert({ name: orderData.customerName, user_id: session.user.id })
-            .select('id')
-            .single();
-        if (customerError || !newCustomer) {
-            console.error('Error creating customer:', customerError?.message);
+        const { data: newCustomer, error: createCustomerError } = await supabase.from('customers').insert({
+            user_id: userId,
+            name: orderData.customerName.trim(),
+        }).select('id').single();
+
+        if (createCustomerError || !newCustomer) {
+            console.error("Failed to create new customer:", createCustomerError);
             return;
         }
-        customer = newCustomer;
+        customerId = newCustomer.id;
     }
-    const customerId = customer.id;
 
     // 2. Create Order
-    const { data: newOrder, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-            customer_id: customerId,
-            total_amount: orderData.total,
-            status: 'pending',
-            order_date: new Date().toISOString(),
-            user_id: session.user.id,
-        })
-        .select()
-        .single();
+    const { data: newOrder, error: createOrderError } = await supabase.from('orders').insert({
+        user_id: userId,
+        customer_id: customerId,
+        customer_name: orderData.customerName.trim(),
+        total_amount: orderData.total,
+        status: 'pending',
+    }).select('id').single();
 
-    if (orderError || !newOrder) {
-        console.error('Error creating order:', orderError?.message);
+    if (createOrderError || !newOrder) {
+        console.error("Failed to create order:", createOrderError);
         return;
     }
 
     // 3. Create Order Items
-    const orderItemsToInsert = orderData.items.map(item => ({
-        order_id: newOrder.id,
-        variant_id: item.variantId,
-        quantity: item.quantity,
-        price_at_time_of_order: item.price,
-        user_id: session.user.id,
-    }));
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItemsToInsert);
+    const orderItemsInserts = orderData.items.map(item => {
+        const productInfo = products.find(p => p.variants.some(v => v.id === item.variantId));
+        const variantInfo = productInfo?.variants.find(v => v.id === item.variantId);
+        return {
+            order_id: newOrder.id,
+            variant_id: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+            product_name_cache: productInfo?.name,
+            variant_name_cache: variantInfo?.variant_name,
+        };
+    });
+
+    const { error: itemsError } = await supabase.from('order_items').insert(orderItemsInserts);
     if (itemsError) {
-        console.error('Error creating order items:', itemsError.message);
-        // Potential rollback logic here
+        console.error("Failed to create order items:", itemsError);
         return;
     }
 
@@ -544,12 +670,13 @@ const App: React.FC = () => {
         await handleAddStockMovement({
             variantId: item.variantId,
             warehouseId: warehouses[0].id,
-            quantity: -item.quantity, // Negative quantity for a sale
+            quantity: -item.quantity,
             type: 'sale',
             reference: `Commande #${newOrder.id}`,
         });
     }
 
+    await Promise.all([fetchOrders(), fetchCustomers()]);
     setCurrentPage('orders');
 };
 
@@ -564,7 +691,7 @@ const App: React.FC = () => {
       case 'products':
         return <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')} />;
       case 'product-detail':
-        return selectedProduct ? <ProductDetailPage product={selectedProduct} onBack={handleBackToList} /> : <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')}/>;
+        return selectedProduct ? <ProductDetailPage product={selectedProduct} onBack={handleBackToList} onAddMovement={handleAddStockMovement} warehouses={warehouses} /> : <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')}/>;
       case 'add-stock':
         return <AddStockMovementPage products={products} warehouses={warehouses} onAddMovement={handleAddStockMovement} onBack={() => handleNavigate('dashboard')} />;
       case 'add-product':

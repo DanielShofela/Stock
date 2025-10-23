@@ -4,7 +4,7 @@ import { HomeIcon } from './icons/HomeIcon';
 import { BoxIcon } from './icons/BoxIcon';
 import { FileTextIcon } from './icons/FileTextIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
-import { PlusIcon } from './icons/PlusIcon';
+import { MoveIcon } from './icons/MoveIcon';
 import { LeafIcon } from './icons/LeafIcon';
 
 interface SideNavProps {
@@ -37,21 +37,12 @@ const NavItem: React.FC<{
 const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate }) => {
   return (
     <aside className="w-64 bg-white h-screen flex-col p-4 border-r border-gray-200 hidden md:flex sticky top-0">
-      <div className="flex items-center gap-2.5 px-2 mb-6">
+      <div className="flex items-center gap-2.5 px-2 mb-8">
           <div className="bg-[#009245] p-2 rounded-lg">
             <LeafIcon className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-800 tracking-tight">A-Cosmetic</h1>
       </div>
-
-      <button
-        id="add-stock-button"
-        onClick={() => onNavigate('add-stock')}
-        className="flex items-center justify-center gap-2 w-full bg-[#0076BC] text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 shadow-lg shadow-[#0076BC]/30 mb-6"
-      >
-        <PlusIcon className="w-5 h-5" />
-        <span>Nouveau Mouvement</span>
-      </button>
 
       <nav className="flex flex-col gap-2">
         <NavItem 
@@ -70,12 +61,20 @@ const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate }) => {
             isActive={currentPage === 'products' || currentPage === 'product-detail' || currentPage === 'add-product'}
             onClick={onNavigate}
         />
+         <NavItem 
+            id="mouvements-nav-item"
+            page="add-stock" 
+            label="Mouvements"
+            icon={<MoveIcon className="w-6 h-6" />}
+            isActive={currentPage === 'add-stock'}
+            onClick={onNavigate}
+        />
         <NavItem 
             id="orders-nav-item"
             page="orders" 
             label="Commandes"
             icon={<FileTextIcon className="w-6 h-6" />}
-            isActive={currentPage === 'orders'}
+            isActive={currentPage === 'orders' || currentPage === 'add-order'}
             onClick={onNavigate}
         />
         <NavItem 

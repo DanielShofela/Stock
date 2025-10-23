@@ -167,7 +167,7 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
                               />
                                <p className="text-xs text-gray-400 text-center mt-0.5">Stock: {item.stock}</p>
                           </div>
-                          <p className="w-20 text-right text-sm font-semibold">{(item.quantity * item.price).toFixed(2)}€</p>
+                          <p className="w-20 text-right text-sm font-semibold">{(item.quantity * item.price)} FCFA</p>
                           <button type="button" onClick={() => handleRemoveItem(item.variantId)} className="text-red-500 hover:text-red-700 p-1">
                               <TrashIcon className="w-5 h-5" />
                           </button>
@@ -179,7 +179,7 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
 
           <div className="bg-white p-4 rounded-2xl shadow-sm text-right">
               <span className="text-gray-600">Total de la commande:</span>
-              <p className="text-3xl font-bold text-gray-800">{total.toFixed(2)}€</p>
+              <p className="text-3xl font-bold text-gray-800">{total} FCFA</p>
           </div>
 
           <button type="submit" className="w-full bg-[#009245] text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009245] transition-all duration-300 shadow-lg shadow-[#009245]/30">

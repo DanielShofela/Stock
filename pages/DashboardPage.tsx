@@ -44,7 +44,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ products, stockMovements,
                 <p className="text-xs text-gray-500">{payment.orderId} - {payment.dueDate}</p>
             </div>
             <div className="text-sm font-bold text-orange-500">
-                {payment.amount.toFixed(2)}€
+                {payment.amount} FCFA
             </div>
         </div>
     );

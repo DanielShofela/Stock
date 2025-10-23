@@ -34,7 +34,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                 </div>
                 <div>
                     <p className="text-xs text-gray-500 text-right">Total</p>
-                    <p className="font-bold text-lg text-[#0076BC]">{order.total_amount.toFixed(2)}€</p>
+                    <p className="font-bold text-lg text-[#0076BC]">{order.total_amount} FCFA</p>
                 </div>
             </div>
         </div>
