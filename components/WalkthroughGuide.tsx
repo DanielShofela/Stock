@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 export type Step = {
   title: string;
@@ -18,27 +18,38 @@ interface WalkthroughGuideProps {
 const WalkthroughGuide: React.FC<WalkthroughGuideProps> = ({ stepConfig, onNext, onSkip, onDone, isLastStep }) => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
-  useEffect(() => {
+  const calculateTargetRect = useCallback(() => {
     if (stepConfig?.targetId) {
-       const timer = setTimeout(() => {
-        const element = document.getElementById(stepConfig.targetId);
-        if (element) {
-          setTargetRect(element.getBoundingClientRect());
-        } else {
-          setTargetRect(null);
-        }
-      }, 100); // Small delay to allow for page transitions
-      return () => clearTimeout(timer);
+      const element = document.getElementById(stepConfig.targetId);
+      if (element) {
+        setTargetRect(element.getBoundingClientRect());
+      } else {
+        setTargetRect(null);
+      }
     } else {
       setTargetRect(null);
     }
-  }, [stepConfig]);
+  }, [stepConfig?.targetId]);
+
+  useEffect(() => {
+    // A small delay is needed to wait for page transitions to finish
+    // before calculating the target element's position.
+    const timer = setTimeout(calculateTargetRect, 150);
+    window.addEventListener('resize', calculateTargetRect);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateTargetRect);
+    };
+  }, [calculateTargetRect, stepConfig]);
 
   if (!stepConfig) {
     return null;
   }
+
+  const hasTarget = Boolean(targetRect);
   
-  const spotlightStyle: React.CSSProperties = targetRect ? {
+  const spotlightStyle: React.CSSProperties = hasTarget && targetRect ? {
       position: 'absolute',
       left: `${targetRect.left - 8}px`,
       top: `${targetRect.top - 8}px`,
@@ -51,32 +62,32 @@ const WalkthroughGuide: React.FC<WalkthroughGuideProps> = ({ stepConfig, onNext,
       pointerEvents: 'none',
   } : {};
 
-  const bubbleStyle: React.CSSProperties = {};
-  if (targetRect) {
-      if(stepConfig.position === 'top') {
-          bubbleStyle.bottom = `${window.innerHeight - targetRect.top + 16}px`;
-          bubbleStyle.left = `${targetRect.left + targetRect.width / 2}px`;
-          bubbleStyle.transform = 'translateX(-50%)';
-      } else { // bottom
-          bubbleStyle.top = `${targetRect.bottom + 16}px`;
-          bubbleStyle.left = `${targetRect.left + targetRect.width / 2}px`;
-          bubbleStyle.transform = 'translateX(-50%)';
-      }
-  } else { // center
-      bubbleStyle.top = '50%';
-      bubbleStyle.left = '50%';
-      bubbleStyle.transform = 'translate(-50%, -50%)';
-  }
+  // Always center the informational bubble for maximum responsiveness.
+  const bubbleStyle: React.CSSProperties = {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      zIndex: 10001,
+  };
 
   return (
     <div className="fixed inset-0 z-[9999]">
-      <div style={spotlightStyle} />
+      {hasTarget ? (
+          <div style={spotlightStyle} />
+      ) : (
+          <div className="absolute inset-0 bg-black bg-opacity-60" aria-hidden="true" />
+      )}
+      
       <div
         style={bubbleStyle}
-        className="absolute bg-white rounded-lg p-4 w-[calc(100%-2rem)] max-w-sm shadow-2xl z-[10001]"
+        className="bg-white rounded-lg p-4 w-[calc(100%-2rem)] max-w-sm shadow-2xl"
+        role="dialog"
+        aria-labelledby="walkthrough-title"
+        aria-describedby="walkthrough-text"
       >
-        <h3 className="text-lg font-bold mb-2 text-gray-800">{stepConfig.title}</h3>
-        <p className="text-sm text-gray-600">{stepConfig.text}</p>
+        <h3 id="walkthrough-title" className="text-lg font-bold mb-2 text-gray-800">{stepConfig.title}</h3>
+        <p id="walkthrough-text" className="text-sm text-gray-600">{stepConfig.text}</p>
         <div className="mt-4 flex justify-between items-center">
             {!isLastStep ? <button onClick={onSkip} className="text-xs text-gray-500 hover:underline">Passer</button> : <div />}
             <button 
