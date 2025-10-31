@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
@@ -8,6 +9,7 @@ import ProductsListPage from './pages/ProductsListPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import AddStockMovementPage from './pages/AddStockMovementPage';
 import AddProductPage from './pages/AddProductPage';
+import EditProductPage from './pages/EditProductPage';
 import ReportsPage from './pages/ReportsPage';
 import OrdersPage from './pages/OrdersPage';
 import AddOrderPage from './pages/AddOrderPage';
@@ -19,7 +21,7 @@ import SideNav from './components/SideNav';
 import WalkthroughGuide, { type Step as WalkthroughStep } from './components/WalkthroughGuide';
 import type { Product, StockMovement, Warehouse, Customer, Order, Profile, UserRole } from './types';
 
-export type Page = 'dashboard' | 'products' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'orders' | 'add-order' | 'account' | 'admin';
+export type Page = 'dashboard' | 'products' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'edit-product' | 'orders' | 'add-order' | 'account' | 'admin';
 
 const walkthroughSteps: (WalkthroughStep & { page?: Page })[] = [
   {
@@ -114,6 +116,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [walkthroughStep, setWalkthroughStep] = useState(0);
@@ -297,7 +300,7 @@ const App: React.FC = () => {
     }
   };
   
-  const fetchProductsAndStock = async () => {
+  const fetchProductsAndStock = async (): Promise<Product[] | undefined> => {
      const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select(`
@@ -313,10 +316,10 @@ const App: React.FC = () => {
       return;
     }
 
-    const variantIds = productsData.flatMap(p => p.product_variants.map(v => v.id));
+    const variantIds = productsData.flatMap(p => p.product_variants.map((v: any) => v.id));
     if (variantIds.length === 0) {
        setProducts([]);
-       return;
+       return [];
     }
 
     const { data: movementsData, error: movementsError } = await supabase
@@ -338,14 +341,14 @@ const App: React.FC = () => {
     }, {} as Record<number, typeof movements>);
 
 
-    const formattedProducts: Product[] = productsData.map(p => ({
+    const formattedProducts: Product[] = productsData.map((p: any) => ({
         id: p.id,
         name: p.name,
         sku: p.sku,
         description: p.description,
         category: p.category,
         images: Array.isArray(p.images) ? p.images.filter((img): img is string => typeof img === 'string') : [],
-        variants: p.product_variants.map(v => {
+        variants: p.product_variants.map((v: any) => {
             const variantMovements = movementsByVariant[v.id] || [];
 
             const total_received = variantMovements
@@ -375,7 +378,7 @@ const App: React.FC = () => {
                 total_shipped,
                 total_damaged,
                 last_received_date,
-                stock_levels: v.stock_levels.map(sl => ({
+                stock_levels: v.stock_levels.map((sl: any) => ({
                     warehouse_id: sl.warehouse_id,
                     warehouse_name: warehouses.find(w => w.id === sl.warehouse_id)?.name || 'Unknown',
                     quantity: sl.quantity || 0,
@@ -387,6 +390,7 @@ const App: React.FC = () => {
         })
     }));
     setProducts(formattedProducts);
+    return formattedProducts;
   };
   
   const fetchMovements = async () => {
@@ -503,6 +507,7 @@ const App: React.FC = () => {
   }, []);
   const handleBackToList = useCallback(() => {
     setSelectedProduct(null);
+    setProductToEdit(null);
     setCurrentPage('products');
   }, []);
 
@@ -571,6 +576,63 @@ const App: React.FC = () => {
     
     await fetchProductsAndStock(); // Refresh product list
     setCurrentPage('products');
+  };
+  
+  const handleEditProduct = (product: Product) => {
+    setProductToEdit(product);
+    setCurrentPage('edit-product');
+  };
+
+  const handleDeleteProduct = async (productId: number) => {
+    const { error } = await supabase.from('products').delete().eq('id', productId);
+    
+    if (error) {
+        console.error("Error deleting product:", error.message);
+    } else {
+        await fetchProductsAndStock();
+        setCurrentPage('products');
+    }
+  };
+
+  const handleUpdateProduct = async (updatedProduct: Product) => {
+    const { variants, ...productInfo } = updatedProduct;
+
+    const { error: productError } = await supabase
+        .from('products')
+        .update({
+            name: productInfo.name,
+            sku: productInfo.sku,
+            description: productInfo.description,
+            category: productInfo.category,
+            images: productInfo.images,
+        })
+        .eq('id', productInfo.id);
+
+    if (productError) {
+        console.error("Error updating product:", productError.message);
+        return;
+    }
+
+    const updatePromises = variants.map(variant =>
+        supabase
+            .from('product_variants')
+            .update({
+                variant_name: variant.variant_name,
+                price: variant.price,
+                barcode: variant.barcode
+            })
+            .eq('id', variant.id)
+    );
+
+    await Promise.all(updatePromises);
+    
+    const refreshedProductList = await fetchProductsAndStock();
+    
+    // Find the fully updated product from the refreshed list to update the detail view
+    const fullyUpdatedProduct = (refreshedProductList || products).find(p => p.id === updatedProduct.id) || updatedProduct;
+
+    setSelectedProduct(fullyUpdatedProduct);
+    setCurrentPage('product-detail');
   };
 
   const handleAddStockMovement = async (movement: { variantId: number, warehouseId: number, quantity: number, type: 'in' | 'out' | 'adjustment' | 'damaged' | 'sale', reference: string }) => {
@@ -697,11 +759,13 @@ const App: React.FC = () => {
       case 'products':
         return <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')} />;
       case 'product-detail':
-        return selectedProduct ? <ProductDetailPage product={selectedProduct} onBack={handleBackToList} onAddMovement={handleAddStockMovement} warehouses={warehouses} /> : <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')}/>;
+        return selectedProduct ? <ProductDetailPage product={selectedProduct} onBack={handleBackToList} onAddMovement={handleAddStockMovement} warehouses={warehouses} onEdit={handleEditProduct} onDelete={handleDeleteProduct} /> : <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')}/>;
       case 'add-stock':
         return <AddStockMovementPage products={products} warehouses={warehouses} onAddMovement={handleAddStockMovement} onBack={() => handleNavigate('dashboard')} />;
       case 'add-product':
         return <AddProductPage onAddProduct={handleAddProduct} warehouses={warehouses} onBack={() => handleNavigate('products')} />;
+      case 'edit-product':
+        return productToEdit ? <EditProductPage product={productToEdit} onUpdateProduct={handleUpdateProduct} onBack={handleBackToList} /> : <ProductsListPage products={products} onSelectProduct={handleSelectProduct} onAddClick={() => handleNavigate('add-product')} />;
       case 'reports':
         return <ReportsPage />;
       case 'orders':

@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import type { Product, StockLevel, ProductVariant, MovementType, Warehouse } from '../types';
 import { BackIcon } from '../components/icons/BackIcon';
+import { PencilIcon } from '../components/icons/PencilIcon';
+import { TrashIcon } from '../components/icons/TrashIcon';
 import StockMovementModal from '../components/StockMovementModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 interface ProductDetailPageProps {
   product: Product;
   warehouses: Warehouse[];
   onBack: () => void;
   onAddMovement: (movement: { variantId: number, warehouseId: number, quantity: number, type: MovementType, reference: string }) => void;
+  onEdit: (product: Product) => void;
+  onDelete: (productId: number) => void;
 }
 
 const getStockStatus = (stockLevel: StockLevel) => {
@@ -27,8 +32,9 @@ const StatCard: React.FC<{label: string, value: string | number | undefined}> = 
     </div>
 );
 
-const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehouses, onBack, onAddMovement }) => {
+const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehouses, onBack, onAddMovement, onEdit, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedVariantForMovement, setSelectedVariantForMovement] = useState<ProductVariant | null>(null);
   const [currentMovementType, setCurrentMovementType] = useState<'in' | 'out'>('in');
 
@@ -58,6 +64,11 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
     });
     handleCloseModal();
   };
+  
+  const handleDeleteConfirm = () => {
+    onDelete(product.id);
+    setIsDeleteModalOpen(false);
+  };
 
   const totalStock = product.variants.flatMap(v => v.stock_levels).reduce((sum, sl) => sum + sl.quantity, 0);
 
@@ -69,9 +80,17 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
             <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
               <BackIcon className="w-6 h-6" />
             </button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-lg font-bold text-gray-800">{product.name}</h1>
               <p className="text-sm text-gray-500">{product.sku}</p>
+            </div>
+            <div className="ml-auto flex gap-2">
+                <button onClick={() => onEdit(product)} className="text-gray-600 p-2 rounded-full hover:bg-gray-100" aria-label="Modifier le produit">
+                    <PencilIcon className="w-6 h-6" />
+                </button>
+                <button onClick={() => setIsDeleteModalOpen(true)} className="text-red-500 p-2 rounded-full hover:bg-red-50" aria-label="Supprimer le produit">
+                    <TrashIcon className="w-6 h-6" />
+                </button>
             </div>
           </header>
           
@@ -147,6 +166,13 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
             movementType={currentMovementType}
          />
       )}
+      <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Supprimer le produit"
+          message={`Êtes-vous sûr de vouloir supprimer "${product.name}" ? Cette action est irréversible et supprimera également toutes les données de stock associées.`}
+      />
     </>
   );
 };
