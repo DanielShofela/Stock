@@ -85,7 +85,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
                     className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-900 shadow-lg shadow-gray-500/30"
                 >
                     <UsersIcon className="w-5 h-5" />
-                    <span>Panneau d'administration</span>
+                    <span>Gestion utilisateurs</span>
                 </button>
             </div>
         )}

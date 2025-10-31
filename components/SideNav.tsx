@@ -93,7 +93,7 @@ const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate, profile }) =
            <NavItem 
                 id="admin-nav-item"
                 page="admin" 
-                label="Admin"
+                label="Utilisateurs"
                 icon={<UsersIcon />}
                 isActive={currentPage === 'admin'}
                 onClick={onNavigate}

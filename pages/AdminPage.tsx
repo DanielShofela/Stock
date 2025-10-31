@@ -132,8 +132,9 @@ const AdminPage: React.FC = () => {
     return (
         <div className="p-4 md:p-6 min-h-screen">
             <div className="md:max-w-4xl md:mx-auto">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Panneau d'administration</h1>
-                
+                <h1 className="text-2xl font-bold text-gray-800">Gestion des utilisateurs</h1>
+                <p className="text-sm text-gray-500 mb-6">Créez, visualisez et gérez les rôles des utilisateurs de l'application.</p>
+
                 {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4" role="alert">{error}</div>}
                 {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4" role="alert">{success}</div>}
 
@@ -167,12 +168,15 @@ const AdminPage: React.FC = () => {
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200/80">
                     <div className="p-6">
-                        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><UsersIcon className="w-5 h-5" />Utilisateurs enregistrés</h2>
+                        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                          <UsersIcon className="w-5 h-5" />
+                          <span>Utilisateurs enregistrés ({users.length})</span>
+                        </h2>
                     </div>
                      {loading ? <p className="p-6 text-center text-gray-500">Chargement des utilisateurs...</p> : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm text-left">
-                                <thead className="bg-gray-50 border-b border-gray-200">
+                                <thead className="bg-gray-50 border-y border-gray-200">
                                     <tr>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Rôle</th>
