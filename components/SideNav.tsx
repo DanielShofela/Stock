@@ -6,10 +6,14 @@ import { FileTextIcon } from './icons/FileTextIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { MoveIcon } from './icons/MoveIcon';
 import { LeafIcon } from './icons/LeafIcon';
+import { UserIcon } from './icons/UserIcon';
+import { UsersIcon } from './icons/UsersIcon';
+import type { Profile } from '../types';
 
 interface SideNavProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
+  profile: Profile | null;
 }
 
 const NavItem: React.FC<{
@@ -25,31 +29,31 @@ const NavItem: React.FC<{
         onClick={() => onClick(page)}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left transition-colors duration-200 ${
             isActive 
-            ? 'bg-[#0076BC] text-white shadow-sm' 
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
+            : 'text-gray-600 hover:bg-blue-50 hover:text-gray-900'
         }`}
     >
-        {icon}
+        {React.cloneElement(icon as React.ReactElement, { className: 'w-6 h-6 flex-shrink-0' })}
         <span className="font-semibold">{label}</span>
     </button>
 );
 
-const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate }) => {
+const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate, profile }) => {
   return (
     <aside className="w-64 bg-white h-screen flex-col p-4 border-r border-gray-200 hidden md:flex sticky top-0">
-      <div className="flex items-center gap-2.5 px-2 mb-8">
-          <div className="bg-[#009245] p-2 rounded-lg">
+      <div className="flex items-center gap-3 px-2 mb-8">
+          <div className="bg-green-500 p-2.5 rounded-lg">
             <LeafIcon className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-800 tracking-tight">A-Cosmetic</h1>
       </div>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-2 flex-1">
         <NavItem 
             id="dashboard-nav-item"
             page="dashboard" 
             label="Accueil"
-            icon={<HomeIcon className="w-6 h-6" />}
+            icon={<HomeIcon />}
             isActive={currentPage === 'dashboard'}
             onClick={onNavigate}
         />
@@ -57,35 +61,56 @@ const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate }) => {
             id="products-nav-item"
             page="products" 
             label="Produits"
-            icon={<BoxIcon className="w-6 h-6" />}
+            icon={<BoxIcon />}
             isActive={currentPage === 'products' || currentPage === 'product-detail' || currentPage === 'add-product'}
+            onClick={onNavigate}
+        />
+        <NavItem
+            id="orders-nav-item"
+            page="orders"
+            label="Commandes"
+            icon={<FileTextIcon />}
+            isActive={currentPage === 'orders' || currentPage === 'add-order'}
             onClick={onNavigate}
         />
          <NavItem 
             id="mouvements-nav-item"
             page="add-stock" 
             label="Mouvements"
-            icon={<MoveIcon className="w-6 h-6" />}
+            icon={<MoveIcon />}
             isActive={currentPage === 'add-stock'}
-            onClick={onNavigate}
-        />
-        <NavItem 
-            id="orders-nav-item"
-            page="orders" 
-            label="Commandes"
-            icon={<FileTextIcon className="w-6 h-6" />}
-            isActive={currentPage === 'orders' || currentPage === 'add-order'}
             onClick={onNavigate}
         />
         <NavItem 
             id="reports-nav-item"
             page="reports" 
             label="Rapports"
-            icon={<ChartBarIcon className="w-6 h-6" />}
+            icon={<ChartBarIcon />}
             isActive={currentPage === 'reports'}
             onClick={onNavigate}
         />
+        {profile?.role === 'admin' && (
+           <NavItem 
+                id="admin-nav-item"
+                page="admin" 
+                label="Admin"
+                icon={<UsersIcon />}
+                isActive={currentPage === 'admin'}
+                onClick={onNavigate}
+            />
+        )}
       </nav>
+
+        <div className="mt-auto">
+             <NavItem
+                id="account-nav-item-desktop"
+                page="account"
+                label="Mon Compte"
+                icon={<UserIcon />}
+                isActive={currentPage === 'account'}
+                onClick={onNavigate}
+            />
+        </div>
     </aside>
   );
 };

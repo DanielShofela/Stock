@@ -14,6 +14,15 @@ export type Database = DB;
 // Override the generated enum to include the new 'damaged' type and 'sale' type
 export type MovementType = DB['public']['Enums']['movement_type'] | 'damaged' | 'sale';
 
+// Roles for Role-Based Access Control (RBAC)
+export type UserRole = 'admin' | 'manager';
+
+export interface Profile {
+  id: string; // Corresponds to auth.users.id
+  role: UserRole;
+  email?: string;
+}
+
 
 // Frontend-specific types for ease of use in components
 export interface StockLevel {
@@ -59,39 +68,32 @@ export interface StockMovement {
   reference: string | null;
 }
 
-export interface OverduePayment {
-  id: number;
-  orderId: string;
-  customerName: string;
-  amount: number;
-  dueDate: string;
-}
-
 export type Warehouse = DB['public']['Tables']['warehouses']['Row'];
 
-// --- NEW TYPES FOR ORDERS ---
-
-export interface Customer {
-  id: number;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-}
+// Types for Order Management
+export type OrderStatus = 'pending' | 'completed' | 'cancelled';
 
 export interface OrderItem {
   id: number;
-  product_name: string;
-  variant_name: string;
+  order_id: number;
+  variant_id: number;
   quantity: number;
-  price: number; // Price at time of order
+  price: number;
 }
 
 export interface Order {
   id: number;
+  customer_id: number;
   customer_name: string;
   order_date: string;
-  status: 'pending' | 'completed' | 'cancelled';
   total_amount: number;
+  status: OrderStatus;
   items: OrderItem[];
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  user_id: string;
+  created_at: string;
 }

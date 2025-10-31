@@ -25,14 +25,14 @@ const ProductsListPage: React.FC<ProductsListPageProps> = ({ products, onSelectP
   }, [searchTerm, products]);
 
   return (
-    <div className="p-4 bg-[#F5F5F5] min-h-screen">
-      <div className="sticky top-0 bg-[#F5F5F5] py-2 z-10">
+    <div className="p-4 md:p-6 min-h-screen">
+      <div className="sticky top-0 bg-gray-50/80 backdrop-blur-sm py-3 z-10 -mx-4 px-4 md:-mx-6 md:px-6">
         <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-bold text-gray-800">Catalogue Produits</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Catalogue Produits</h1>
             <button
                 id="add-product-button"
                 onClick={onAddClick}
-                className="flex items-center gap-2 bg-[#0076BC] text-white font-bold py-2 px-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 shadow-lg shadow-[#0076BC]/30 text-sm"
+                className="flex items-center gap-2 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md shadow-blue-500/30 text-sm"
             >
                 <PlusIcon className="w-5 h-5" />
                 <span>Ajouter</span>
@@ -40,12 +40,12 @@ const ProductsListPage: React.FC<ProductsListPageProps> = ({ products, onSelectP
         </div>
         <div className="relative">
           <input
-            className="w-full rounded-xl p-3 pl-10 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
-            placeholder="Rechercher un produit..."
+            className="w-full rounded-xl p-3 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Rechercher par nom ou SKU..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         </div>
       </div>
       
@@ -57,7 +57,7 @@ const ProductsListPage: React.FC<ProductsListPageProps> = ({ products, onSelectP
         </div>
       ) : (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 {filteredProducts.map(p => (
                 <ProductCard key={p.id} product={p} onOpen={onSelectProduct} />
                 ))}

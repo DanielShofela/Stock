@@ -3,7 +3,7 @@ import type { Page } from '../App';
 import { HomeIcon } from './icons/HomeIcon';
 import { BoxIcon } from './icons/BoxIcon';
 import { FileTextIcon } from './icons/FileTextIcon';
-import { ChartBarIcon } from './icons/ChartBarIcon';
+import { UserIcon } from './icons/UserIcon';
 import { PlusIcon } from './icons/PlusIcon';
 
 
@@ -20,16 +20,16 @@ const NavItem: React.FC<{
     isActive: boolean;
     onClick: (page: Page) => void;
 }> = ({ id, page, label, icon, isActive, onClick }) => (
-    <button id={id} onClick={() => onClick(page)} className={`flex flex-col items-center justify-center w-full transition-colors duration-200 ${isActive ? 'text-[#0076BC]' : 'text-gray-500 hover:text-[#0076BC]'}`}>
+    <button id={id} onClick={() => onClick(page)} className={`flex flex-col items-center justify-center w-full transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}>
         {icon}
-        <span className="text-xs mt-1">{label}</span>
+        <span className="text-xs mt-1 font-semibold">{label}</span>
     </button>
 );
 
 
 const BottomNav: React.FC<BottomNavProps> = ({ currentPage, onNavigate }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex items-center justify-around z-50">
+    <div className="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-[0_-2px_15px_rgba(0,0,0,0.08)] flex items-center justify-around z-50">
        <NavItem 
             id="dashboard-nav-item"
             page="dashboard" 
@@ -48,25 +48,25 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, onNavigate }) => {
         />
         
         <div className="w-16 h-16 flex items-center justify-center">
-            <button id="add-stock-button" onClick={() => onNavigate('add-stock')} className="w-14 h-14 bg-[#0076BC] rounded-full flex items-center justify-center text-white shadow-lg shadow-[#0076BC]/40 transform -translate-y-4 hover:scale-105 transition-transform">
+            <button id="add-stock-button" onClick={() => onNavigate('add-stock')} className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/50 transform -translate-y-4 hover:scale-110">
                 <PlusIcon className="w-7 h-7" />
             </button>
         </div>
 
-        <NavItem 
+        <NavItem
             id="orders-nav-item"
-            page="orders" 
+            page="orders"
             label="Commandes"
             icon={<FileTextIcon className="w-6 h-6" />}
-            isActive={currentPage === 'orders'}
+            isActive={currentPage === 'orders' || currentPage === 'add-order'}
             onClick={onNavigate}
         />
         <NavItem 
-            id="reports-nav-item"
-            page="reports" 
-            label="Rapports"
-            icon={<ChartBarIcon className="w-6 h-6" />}
-            isActive={currentPage === 'reports'}
+            id="account-nav-item"
+            page="account" 
+            label="Compte"
+            icon={<UserIcon className="w-6 h-6" />}
+            isActive={currentPage === 'account'}
             onClick={onNavigate}
         />
     </div>
