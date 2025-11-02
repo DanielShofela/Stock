@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabaseClient';
 import type { Profile, UserRole } from '../types';
 import { UsersIcon } from '../components/icons/UsersIcon';
 import { PlusIcon } from '../components/icons/PlusIcon';
+import ConfirmationModal from '../components/ConfirmationModal';
+import { TrashIcon } from '../components/icons/TrashIcon';
 
 // --- IMPORTANT SUPABASE SETUP ---
 // To make this page work, you need to set up a 'profiles' table and a trigger in Supabase.
@@ -12,8 +14,9 @@ import { PlusIcon } from '../components/icons/PlusIcon';
 /*
    CREATE TABLE public.profiles (
       id uuid NOT NULL,
-      email text NULL,
+      email text NOT NULL,
       role text NULL DEFAULT 'manager'::text,
+      status text NULL DEFAULT 'active'::text, -- ADD THIS LINE FOR BLOCKING
       CONSTRAINT profiles_pkey PRIMARY KEY (id),
       CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
    );
@@ -22,7 +25,7 @@ import { PlusIcon } from '../components/icons/PlusIcon';
 // 2. ENABLE ROW LEVEL SECURITY (RLS) on the `profiles` table.
 //
 // 3. CREATE RLS POLICIES:
-//    Go to Authentication > Policies and create these for the `profiles` table:
+//    Go to Authentication > Policies and create/update these for the `profiles` table:
 //
 //    A) Policy for users to read their own profile:
 //       - Policy Name: "Enable read access for users to their own profile"
@@ -61,9 +64,36 @@ import { PlusIcon } from '../components/icons/PlusIcon';
      for each row execute procedure public.handle_new_user();
 */
 //
-// 5. SET YOUR FIRST ADMIN:
-//    After setting up the above, sign up for an account, go to the `profiles` table in the
-//    Table Editor, find your user, and manually change the `role` from 'manager' to 'admin'.
+// 5. USER DELETION (SECURITY NOTE):
+//    Deleting other users requires admin privileges that should not be exposed on the client-side.
+//    This action MUST be handled by a secure Supabase Edge Function.
+//
+//    Example Edge Function (`supabase/functions/delete-user/index.ts`):
+/*
+    import { createClient } from '@supabase/supabase-js'
+    
+    Deno.serve(async (req) => {
+      // 1. Check if the user is an admin
+      const authHeader = req.headers.get('Authorization')!
+      const supabaseClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authHeader } } })
+      const { data: { user } } = await supabaseClient.auth.getUser()
+      if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+      
+      const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single()
+      if (profile?.role !== 'admin') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 })
+
+      // 2. If admin, proceed with deletion
+      const { userIdToDelete } = await req.json()
+      if (!userIdToDelete) return new Response(JSON.stringify({ error: 'User ID is required' }), { status: 400 })
+      
+      const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(userIdToDelete)
+      
+      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+      
+      return new Response(JSON.stringify({ message: 'User deleted successfully' }), { status: 200 })
+    })
+*/
 
 const AdminPage: React.FC = () => {
     const [users, setUsers] = useState<Profile[]>([]);
@@ -74,6 +104,8 @@ const AdminPage: React.FC = () => {
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<UserRole>('manager');
     const [inviting, setInviting] = useState(false);
+
+    const [modalState, setModalState] = useState<{ type: 'delete' | 'block' | null, user: Profile | null }>({ type: null, user: null });
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -90,19 +122,57 @@ const AdminPage: React.FC = () => {
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
+    
+    const showSuccess = (message: string) => {
+        setSuccess(message);
+        setTimeout(() => setSuccess(''), 4000);
+    }
 
     const handleRoleChange = async (userId: string, newRole: UserRole) => {
         const oldUsers = [...users];
         setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-
         const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
-        
         if (error) {
             setError("Impossible de mettre à jour le rôle.");
-            setUsers(oldUsers); // Revert on error
+            setUsers(oldUsers);
         } else {
-            setSuccess(`Le rôle de ${users.find(u=>u.id===userId)?.email} a été mis à jour.`);
-            setTimeout(() => setSuccess(''), 3000);
+            showSuccess(`Le rôle de ${users.find(u=>u.id===userId)?.email} a été mis à jour.`);
+        }
+    };
+
+    const handleStatusChange = async (user: Profile) => {
+        const newStatus = (user.status ?? 'active') === 'active' ? 'blocked' : 'active';
+        const oldUsers = [...users];
+        setUsers(users.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
+        
+        const { error } = await supabase.from('profiles').update({ status: newStatus }).eq('id', user.id);
+        
+        if (error) {
+            setError(`Impossible de changer le statut.`);
+            setUsers(oldUsers);
+        } else {
+            showSuccess(`Le statut de ${user.email} a été mis à jour.`);
+        }
+        setModalState({ type: null, user: null });
+    };
+    
+    const handleConfirmDelete = async () => {
+        if (!modalState.user) return;
+        
+        try {
+            const { error } = await supabase.functions.invoke('delete-user', {
+                body: { userIdToDelete: modalState.user.id }
+            });
+
+            if (error) throw error;
+            
+            showSuccess(`L'utilisateur ${modalState.user.email} a été supprimé.`);
+            fetchUsers(); // Re-fetch the list
+        } catch (err: any) {
+            setError(`Erreur de suppression: ${err.message}. Assurez-vous que la fonction Edge est déployée.`);
+            console.error(err);
+        } finally {
+            setModalState({ type: null, user: null });
         }
     };
 
@@ -128,6 +198,8 @@ const AdminPage: React.FC = () => {
     };
     
     const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
+    
+    const closeModal = () => setModalState({ type: null, user: null });
 
     return (
         <div className="p-4 md:p-6 min-h-screen">
@@ -156,15 +228,11 @@ const AdminPage: React.FC = () => {
                         </div>
                         <div>
                              <button type="submit" disabled={inviting} className="w-full md:w-auto bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-blue-700 disabled:bg-gray-400">
-                                {inviting ? 'Création en cours...' : "Créer l'utilisateur et envoyer l'invitation"}
+                                {inviting ? 'Création en cours...' : "Créer et inviter l'utilisateur"}
                             </button>
                         </div>
                     </form>
-                    <p className="text-xs text-gray-500 mt-3">
-                        Pour des raisons de sécurité, un e-mail est envoyé au nouvel utilisateur pour qu'il puisse définir son propre mot de passe et finaliser la création de son compte.
-                    </p>
                 </div>
-
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200/80">
                     <div className="p-6">
@@ -180,6 +248,8 @@ const AdminPage: React.FC = () => {
                                     <tr>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Rôle</th>
+                                        <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Statut</th>
+                                        <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -196,6 +266,19 @@ const AdminPage: React.FC = () => {
                                                 <option value="admin">Admin</option>
                                             </select>
                                         </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${(user.status ?? 'active') === 'blocked' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                                {(user.status ?? 'active') === 'blocked' ? 'Bloqué' : 'Actif'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button onClick={() => setModalState({ type: 'block', user })} className="font-semibold text-blue-600 hover:text-blue-800 mr-4">
+                                                {(user.status ?? 'active') === 'blocked' ? 'Débloquer' : 'Bloquer'}
+                                            </button>
+                                            <button onClick={() => setModalState({ type: 'delete', user })} className="font-semibold text-red-600 hover:text-red-800">
+                                                Supprimer
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                                 </tbody>
@@ -204,6 +287,19 @@ const AdminPage: React.FC = () => {
                      )}
                 </div>
             </div>
+            {modalState.user && (
+                <ConfirmationModal
+                    isOpen={modalState.type !== null}
+                    onClose={closeModal}
+                    onConfirm={modalState.type === 'delete' ? handleConfirmDelete : () => handleStatusChange(modalState.user!)}
+                    title={modalState.type === 'delete' ? 'Supprimer l\'utilisateur' : 'Changer le statut'}
+                    message={
+                        modalState.type === 'delete'
+                        ? `Êtes-vous sûr de vouloir supprimer définitivement ${modalState.user.email} ? Cette action est irréversible.`
+                        : `Êtes-vous sûr de vouloir ${(modalState.user.status ?? 'active') === 'active' ? 'bloquer' : 'débloquer'} ${modalState.user.email} ?`
+                    }
+                />
+            )}
         </div>
     );
 };

@@ -20,7 +20,8 @@ export type UserRole = 'admin' | 'manager';
 export interface Profile {
   id: string; // Corresponds to auth.users.id
   role: UserRole;
-  email?: string;
+  email: string;
+  status?: 'active' | 'blocked';
 }
 
 
