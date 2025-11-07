@@ -3,7 +3,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import LoginPage from './pages/LoginPage';
-import RoleSelectionPage from './pages/RoleSelectionPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductsListPage from './pages/ProductsListPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -14,14 +13,13 @@ import ReportsPage from './pages/ReportsPage';
 import OrdersPage from './pages/OrdersPage';
 import AddOrderPage from './pages/AddOrderPage';
 import AccountPage from './pages/AccountPage';
-import AdminPage from './pages/AdminPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import BottomNav from './components/BottomNav';
 import SideNav from './components/SideNav';
 import WalkthroughGuide, { type Step as WalkthroughStep } from './components/WalkthroughGuide';
-import type { Product, StockMovement, Warehouse, Customer, Order, Profile, UserRole } from './types';
+import type { Product, StockMovement, Warehouse, Customer, Order, Profile } from './types';
 
-export type Page = 'dashboard' | 'products' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'edit-product' | 'orders' | 'add-order' | 'account' | 'admin';
+export type Page = 'dashboard' | 'products' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'edit-product' | 'orders' | 'add-order' | 'account';
 
 const walkthroughSteps: (WalkthroughStep & { page?: Page })[] = [
   {
@@ -105,7 +103,6 @@ const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
-  const [selectedLoginRole, setSelectedLoginRole] = useState<UserRole | null>(null);
   const [authEvent, setAuthEvent] = useState<AuthChangeEvent | null>(null);
   
   const [products, setProducts] = useState<Product[]>([]);
@@ -161,7 +158,6 @@ const App: React.FC = () => {
                 setLoading(false);
             } else {
                 setProfile(null);
-                setSelectedLoginRole(null);
                 setAuthEvent(null);
             }
         });
@@ -174,12 +170,15 @@ const App: React.FC = () => {
   useEffect(() => {
     if (session) {
       fetchInitialData();
-      const hasCompletedWalkthrough = localStorage.getItem('a-cosmetic-walkthrough-completed');
-      if (!hasCompletedWalkthrough) {
-        setShowWalkthrough(true);
-      }
     }
-  }, [session]);
+    // Show walkthrough if user is logged in, has a profile, and hasn't completed it.
+    if (profile && !profile.walkthrough_completed) {
+      setShowWalkthrough(true);
+    } else {
+      // Hide if there's no profile or if it's already completed.
+      setShowWalkthrough(false);
+    }
+  }, [session, profile]);
 
   const seedDatabase = async () => {
     if (!session?.user || warehouses.length === 0) return;
@@ -494,9 +493,21 @@ const App: React.FC = () => {
     }
     setWalkthroughStep(nextStepIndex);
   };
-  const handleEndWalkthrough = () => {
+  const handleEndWalkthrough = async () => {
     setShowWalkthrough(false);
-    localStorage.setItem('a-cosmetic-walkthrough-completed', 'true');
+    if (session?.user) {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ walkthrough_completed: true })
+            .eq('id', session.user.id);
+
+        if (error) {
+            console.error("Error updating walkthrough status:", error.message);
+        } else {
+            // Update profile in local state to reflect change immediately
+            setProfile(prevProfile => prevProfile ? { ...prevProfile, walkthrough_completed: true } : null);
+        }
+    }
   };
 
   // --- NAVIGATION & UI HANDLERS ---
@@ -729,7 +740,7 @@ const App: React.FC = () => {
         }));
         const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
         if (itemsError) {
-            console.error('Error creating order items:', itemsError.message);
+            console.error('Error creating order items:', itemsError?.message);
             return;
         }
 
@@ -774,8 +785,6 @@ const App: React.FC = () => {
         return <AddOrderPage products={products} customers={customers} onAddOrder={handleAddOrder} onBack={() => handleNavigate('orders')} />;
       case 'account':
         return <AccountPage session={session} profile={profile} onNavigate={handleNavigate} />;
-      case 'admin':
-        return profile?.role === 'admin' ? <AdminPage /> : <DashboardPage products={products} stockMovements={stockMovements} profile={profile} />;
       default:
         return <DashboardPage products={products} stockMovements={stockMovements} profile={profile} />;
     }
@@ -786,10 +795,7 @@ const App: React.FC = () => {
   }
 
   if (!session) {
-    if (!selectedLoginRole) {
-        return <RoleSelectionPage onSelectRole={(role) => setSelectedLoginRole(role)} />;
-    }
-    return <LoginPage selectedRole={selectedLoginRole} onBack={() => setSelectedLoginRole(null)} />;
+    return <LoginPage selectedRole="manager" />;
   }
 
   return (

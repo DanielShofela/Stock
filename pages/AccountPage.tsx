@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 import { UserIcon } from '../components/icons/UserIcon';
-import { UsersIcon } from '../components/icons/UsersIcon';
 import type { Profile } from '../types';
 import type { Page } from '../App';
 
@@ -77,18 +77,6 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
              {profile?.role && <span className="ml-auto text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full capitalize">{profile.role}</span>}
           </div>
         </div>
-
-        {profile?.role === 'admin' && (
-             <div className="mt-6 md:hidden">
-                <button
-                    onClick={() => onNavigate('admin')}
-                    className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-900 shadow-lg shadow-gray-500/30"
-                >
-                    <UsersIcon className="w-5 h-5" />
-                    <span>Gestion utilisateurs</span>
-                </button>
-            </div>
-        )}
 
         <div className="bg-white rounded-xl shadow-sm p-6 mt-6 border border-gray-200/80">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Changer de mot de passe</h2>

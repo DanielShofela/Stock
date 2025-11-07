@@ -1,3 +1,4 @@
+
 import type { Database as DB } from './database.types';
 
 export type Json =
@@ -15,13 +16,14 @@ export type Database = DB;
 export type MovementType = DB['public']['Enums']['movement_type'] | 'damaged' | 'sale';
 
 // Roles for Role-Based Access Control (RBAC)
-export type UserRole = 'admin' | 'manager';
+export type UserRole = 'manager';
 
 export interface Profile {
   id: string; // Corresponds to auth.users.id
   role: UserRole;
   email: string;
   status?: 'active' | 'blocked';
+  walkthrough_completed?: boolean;
 }
 
 

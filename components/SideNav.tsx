@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Page } from '../App';
 import { HomeIcon } from './icons/HomeIcon';
@@ -7,7 +8,6 @@ import { ChartBarIcon } from './icons/ChartBarIcon';
 import { MoveIcon } from './icons/MoveIcon';
 import { LeafIcon } from './icons/LeafIcon';
 import { UserIcon } from './icons/UserIcon';
-import { UsersIcon } from './icons/UsersIcon';
 import type { Profile } from '../types';
 
 interface SideNavProps {
@@ -89,16 +89,6 @@ const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate, profile }) =
             isActive={currentPage === 'reports'}
             onClick={onNavigate}
         />
-        {profile?.role === 'admin' && (
-           <NavItem 
-                id="admin-nav-item"
-                page="admin" 
-                label="Utilisateurs"
-                icon={<UsersIcon />}
-                isActive={currentPage === 'admin'}
-                onClick={onNavigate}
-            />
-        )}
       </nav>
 
         <div className="mt-auto">

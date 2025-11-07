@@ -1,17 +1,16 @@
+
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { UserRole } from '../types';
 import { LeafIcon } from '../components/icons/LeafIcon';
-import { BackIcon } from '../components/icons/BackIcon';
 import { EyeIcon } from '../components/icons/EyeIcon';
 import { EyeSlashIcon } from '../components/icons/EyeSlashIcon';
 
 interface LoginPageProps {
     selectedRole: UserRole;
-    onBack: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ selectedRole, onBack }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +34,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole, onBack }) => {
         setLoading(false);
     };
 
-    const roleName = selectedRole === 'admin' ? 'Administrateur' : 'Manager';
+    const roleName = 'Manager';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col justify-center items-center p-4">
@@ -49,9 +48,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole, onBack }) => {
                 </div>
                 
                 <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 relative">
-                     <button onClick={onBack} className="absolute top-4 left-4 text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100" aria-label="Retour">
-                        <BackIcon className="w-5 h-5" />
-                    </button>
                     <form onSubmit={handleLogin} className="space-y-6">
                         <h2 className="text-xl font-bold text-center text-gray-700">
                             Connexion <span className="text-blue-600">{roleName}</span>
