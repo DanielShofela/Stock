@@ -17,6 +17,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import BottomNav from './components/BottomNav';
 import SideNav from './components/SideNav';
 import WalkthroughGuide, { type Step as WalkthroughStep } from './components/WalkthroughGuide';
+import LoadingSpinner from './components/LoadingSpinner';
 import type { Product, StockMovement, Warehouse, Customer, Order, Profile } from './types';
 
 export type Page = 'dashboard' | 'products' | 'reports' | 'add-stock' | 'product-detail' | 'add-product' | 'edit-product' | 'orders' | 'add-order' | 'account';
@@ -141,8 +142,9 @@ const App: React.FC = () => {
         setSession(session);
         if (session) {
             await fetchProfile(session.user.id);
+        } else {
+            setLoading(false);
         }
-        setLoading(false);
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             setSession(session);
@@ -155,10 +157,11 @@ const App: React.FC = () => {
             if (session) {
                 setLoading(true);
                 await fetchProfile(session.user.id);
-                setLoading(false);
+                // The loading state will be set to false in the useEffect that depends on the session.
             } else {
                 setProfile(null);
                 setAuthEvent(null);
+                setLoading(false); // No user, so stop loading
             }
         });
 
@@ -252,7 +255,7 @@ const App: React.FC = () => {
 
 
   const fetchInitialData = async () => {
-    if (products.length > 0) return; // Prevent re-fetching if data is already there
+    if (products.length > 0 && !loading) return; // Prevent re-fetching if data is already there
     setLoading(true);
     await fetchWarehouses(); // Must run first
 
@@ -762,8 +765,6 @@ const App: React.FC = () => {
 
   // --- PAGE RENDERING ---
   const renderPage = () => {
-    if(loading) return <div className="p-4 text-center">Chargement de vos données...</div>;
-
     switch (currentPage) {
       case 'dashboard':
         return <DashboardPage products={products} stockMovements={stockMovements} profile={profile} />;
@@ -796,6 +797,15 @@ const App: React.FC = () => {
 
   if (!session) {
     return <LoginPage selectedRole="manager" />;
+  }
+  
+  if (loading) {
+      return (
+        <div className="fixed inset-0 bg-gray-50/80 backdrop-blur-sm flex flex-col items-center justify-center z-[10000]">
+          <LoadingSpinner />
+          <p className="mt-4 text-lg font-semibold text-gray-700">Chargement de vos données...</p>
+        </div>
+      );
   }
 
   return (
