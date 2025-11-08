@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
@@ -17,7 +16,8 @@ interface AccountPageProps {
 const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
       return;
     }
 
-    setLoading(true);
+    setPasswordLoading(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
       setError(error.message);
@@ -44,16 +44,17 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
       setNewPassword('');
       setConfirmPassword('');
     }
-    setLoading(false);
+    setPasswordLoading(false);
   };
 
   const handleLogout = async () => {
-    setLoading(true);
+    setLogoutLoading(true);
     await supabase.auth.signOut();
     // The onAuthStateChange listener in App.tsx will handle the rest.
   };
 
   const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const loading = passwordLoading || logoutLoading;
 
 
   if (!session) {
@@ -94,6 +95,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
                 placeholder="••••••••"
                 className={inputStyle}
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -106,14 +108,23 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
                 placeholder="••••••••"
                 className={inputStyle}
                 required
+                disabled={loading}
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/30 disabled:bg-gray-400"
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
-              Mettre à jour
+              {passwordLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Mise à jour...</span>
+                  </>
+              ) : 'Mettre à jour'}
             </button>
           </form>
         </div>
@@ -122,9 +133,17 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
           <button
             onClick={handleLogout}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 disabled:bg-gray-400"
+            className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 disabled:bg-red-400 disabled:cursor-not-allowed"
           >
-            Se déconnecter
+             {logoutLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Déconnexion...</span>
+                  </>
+              ) : 'Se déconnecter'}
           </button>
         </div>
       </div>
