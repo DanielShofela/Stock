@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
@@ -303,97 +302,49 @@ const App: React.FC = () => {
   };
   
   const fetchProductsAndStock = async (): Promise<Product[] | undefined> => {
-     const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select(`
-            *,
-            product_variants (
-                *,
-                stock_levels (*)
-            )
-        `);
+    const { data: productsData, error: productsError } = await supabase
+       .from('products')
+       .select(`
+           *,
+           product_variants (
+               *,
+               stock_levels (*)
+           )
+       `);
 
-    if (productsError) {
-      console.error('Error fetching products', productsError.message);
-      return;
-    }
+   if (productsError) {
+     console.error('Error fetching products', productsError.message);
+     return;
+   }
 
-    const variantIds = productsData.flatMap(p => p.product_variants.map((v: any) => v.id));
-    if (variantIds.length === 0) {
-       setProducts([]);
-       return [];
-    }
-
-    const { data: movementsData, error: movementsError } = await supabase
-        .from('stock_movements')
-        .select('*')
-        .in('variant_id', variantIds);
-
-    if (movementsError) {
-        console.error('Error fetching movements for products', movementsError.message);
-    }
-    const movements = movementsData || [];
-
-    const movementsByVariant = movements.reduce((acc, mov) => {
-        if (mov.variant_id) {
-            if (!acc[mov.variant_id]) acc[mov.variant_id] = [];
-            acc[mov.variant_id].push(mov);
-        }
-        return acc;
-    }, {} as Record<number, typeof movements>);
-
-
-    const formattedProducts: Product[] = productsData.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        sku: p.sku,
-        description: p.description,
-        category: p.category,
-        images: Array.isArray(p.images) ? p.images.filter((img): img is string => typeof img === 'string') : [],
-        variants: p.product_variants.map((v: any) => {
-            const variantMovements = movementsByVariant[v.id] || [];
-
-            const total_received = variantMovements
-                .filter(m => (['in', 'purchase'].includes(m.movement_type) || (m.movement_type === 'adjustment' && m.quantity > 0)) && m.quantity > 0)
-                .reduce((sum, m) => sum + m.quantity, 0);
-
-            const total_shipped = variantMovements
-                .filter(m => ['out', 'sale'].includes(m.movement_type))
-                .reduce((sum, m) => sum + Math.abs(m.quantity), 0);
-
-            const total_damaged = variantMovements
-                .filter(m => m.movement_type === 'damaged')
-                .reduce((sum, m) => sum + Math.abs(m.quantity), 0);
-
-            const lastReceivedMovements = variantMovements
-                .filter(m => ['in', 'purchase'].includes(m.movement_type) && m.quantity > 0)
-                .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
-
-            const last_received_date = lastReceivedMovements.length > 0 ? lastReceivedMovements[0].created_at! : undefined;
-
-            return {
-                id: v.id,
-                variant_name: v.variant_name,
-                barcode: v.barcode,
-                price: v.price || 0,
-                total_received,
-                total_shipped,
-                total_damaged,
-                last_received_date,
-                stock_levels: v.stock_levels.map((sl: any) => ({
-                    warehouse_id: sl.warehouse_id,
-                    warehouse_name: warehouses.find(w => w.id === sl.warehouse_id)?.name || 'Unknown',
-                    quantity: sl.quantity || 0,
-                    safety_stock: sl.safety_stock || 0,
-                    initial_quantity: sl.initial_quantity || 0,
-                    last_modified: sl.last_modified || new Date().toISOString()
-                }))
-            };
-        })
-    }));
-    setProducts(formattedProducts);
-    return formattedProducts;
-  };
+   const formattedProducts: Product[] = productsData.map((p: any) => ({
+       id: p.id,
+       name: p.name,
+       sku: p.sku,
+       description: p.description,
+       category: p.category,
+       images: Array.isArray(p.images) ? p.images.filter((img): img is string => typeof img === 'string') : [],
+       variants: p.product_variants.map((v: any) => {
+           return {
+               id: v.id,
+               variant_name: v.variant_name,
+               barcode: v.barcode,
+               price: v.price || 0,
+               // Detailed stats (total_received, etc.) will be fetched on the product detail page
+               stock_levels: v.stock_levels.map((sl: any) => ({
+                   warehouse_id: sl.warehouse_id,
+                   warehouse_name: warehouses.find(w => w.id === sl.warehouse_id)?.name || 'Unknown',
+                   quantity: sl.quantity || 0,
+                   safety_stock: sl.safety_stock || 0,
+                   initial_quantity: sl.initial_quantity || 0,
+                   last_modified: sl.last_modified || new Date().toISOString()
+               }))
+           };
+       })
+   }));
+   setProducts(formattedProducts);
+   return formattedProducts;
+ };
   
   const fetchMovements = async () => {
      const { data, error } = await supabase

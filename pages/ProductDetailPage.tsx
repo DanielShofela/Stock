@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Product, StockLevel, ProductVariant, MovementType, Warehouse } from '../types';
+import { supabase } from '../lib/supabaseClient';
 import { BackIcon } from '../components/icons/BackIcon';
 import { PencilIcon } from '../components/icons/PencilIcon';
 import { TrashIcon } from '../components/icons/TrashIcon';
@@ -33,10 +34,81 @@ const StatCard: React.FC<{label: string, value: string | number | undefined}> = 
 );
 
 const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehouses, onBack, onAddMovement, onEdit, onDelete }) => {
+  const [detailedProduct, setDetailedProduct] = useState<Product>(product);
+  const [detailsLoading, setDetailsLoading] = useState<boolean>(true);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedVariantForMovement, setSelectedVariantForMovement] = useState<ProductVariant | null>(null);
   const [currentMovementType, setCurrentMovementType] = useState<'in' | 'out'>('in');
+
+  useEffect(() => {
+    const fetchMovementDetails = async () => {
+        if (!product) return;
+        setDetailsLoading(true);
+
+        const variantIds = product.variants.map(v => v.id);
+        if (variantIds.length === 0) {
+            setDetailsLoading(false);
+            return;
+        }
+
+        const { data: movementsData, error } = await supabase
+            .from('stock_movements')
+            .select('*')
+            .in('variant_id', variantIds);
+
+        if (error) {
+            console.error("Error fetching movement details", error);
+            setDetailsLoading(false);
+            return;
+        }
+
+        const movementsByVariant = (movementsData || []).reduce((acc, mov) => {
+            if (mov.variant_id) {
+                if (!acc[mov.variant_id]) acc[mov.variant_id] = [];
+                acc[mov.variant_id].push(mov);
+            }
+            return acc;
+        }, {} as Record<number, typeof movementsData>);
+        
+        const updatedVariants = product.variants.map(variant => {
+            const variantMovements = movementsByVariant[variant.id] || [];
+            
+            const total_received = variantMovements
+                .filter(m => (['in', 'purchase'].includes(m.movement_type) || (m.movement_type === 'adjustment' && m.quantity > 0)) && m.quantity > 0)
+                .reduce((sum, m) => sum + m.quantity, 0);
+
+            const total_shipped = variantMovements
+                .filter(m => ['out', 'sale'].includes(m.movement_type))
+                .reduce((sum, m) => sum + Math.abs(m.quantity), 0);
+
+            const total_damaged = variantMovements
+                .filter(m => m.movement_type === 'damaged')
+                .reduce((sum, m) => sum + Math.abs(m.quantity), 0);
+            
+            const lastReceivedMovements = variantMovements
+                .filter(m => ['in', 'purchase'].includes(m.movement_type) && m.quantity > 0)
+                .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
+
+            const last_received_date = lastReceivedMovements.length > 0 ? lastReceivedMovements[0].created_at! : undefined;
+
+            return {
+                ...variant,
+                total_received,
+                total_shipped,
+                total_damaged,
+                last_received_date,
+            };
+        });
+        
+        setDetailedProduct({ ...product, variants: updatedVariants });
+        setDetailsLoading(false);
+    };
+
+    fetchMovementDetails();
+  }, [product]);
+
 
   const handleOpenModal = (variant: ProductVariant, type: 'in' | 'out') => {
     setSelectedVariantForMovement(variant);
@@ -110,7 +182,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
             
             <div className="space-y-4">
                 <h2 className="text-md font-bold text-gray-800 px-1">Variantes & Stocks</h2>
-                {product.variants.map(variant => {
+                {detailedProduct.variants.map(variant => {
                     const stockInfo = variant.stock_levels[0];
                     if (!stockInfo) return null;
 
@@ -132,11 +204,11 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
                                       <StatCard label="Stock Initial" value={`${stockInfo.initial_quantity} u.`} />
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                      <StatCard label="Total Reçu" value={variant.total_received} />
-                                      <StatCard label="Total Expédié" value={variant.total_shipped} />
-                                      <StatCard label="Endommagé" value={variant.total_damaged} />
+                                      <StatCard label="Total Reçu" value={detailsLoading ? '...' : variant.total_received} />
+                                      <StatCard label="Total Expédié" value={detailsLoading ? '...' : variant.total_shipped} />
+                                      <StatCard label="Endommagé" value={detailsLoading ? '...' : variant.total_damaged} />
                                 </div>
-                                {variant.last_received_date && (
+                                {!detailsLoading && variant.last_received_date && (
                                     <div className="text-center text-xs text-gray-400 pt-1">
                                         Dernière réception le: {new Date(variant.last_received_date).toLocaleDateString('fr-FR')}
                                     </div>
