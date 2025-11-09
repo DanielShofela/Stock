@@ -18,7 +18,7 @@ const Header: React.FC<{ profile: Profile | null }> = ({ profile }) => {
                 Tableau de bord
             </h1>
             <p className="text-sm text-gray-500">
-                Bienvenue dans votre espace <span className="font-semibold text-blue-600 capitalize">{roleName}</span>
+                Bienvenue dans votre espace <span className="font-semibold text-teal-600 capitalize">{roleName}</span>
             </p>
         </div>
     );
@@ -33,7 +33,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ products, stockMovements,
     );
 
     const MovementItem: React.FC<{ movement: StockMovement }> = ({ movement }) => (
-        <div className="flex justify-between items-center py-2.5 border-b border-gray-100 last:border-b-0">
+        <div className="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-b-0">
             <div>
                 <p className="text-sm font-semibold text-gray-800">{movement.productName}</p>
                 <p className="text-xs text-gray-500">{movement.variantName} - {movement.sku}</p>
@@ -45,7 +45,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ products, stockMovements,
     );
 
     const CriticalStockItem: React.FC<{product: Product}> = ({ product }) => (
-        <div className="flex justify-between items-center py-2.5 border-b border-gray-100 last:border-b-0">
+        <div className="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-b-0">
              <div>
                 <p className="text-sm font-semibold text-gray-800">{product.name}</p>
                 <p className="text-xs text-gray-500">{product.sku}</p>
@@ -76,7 +76,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ products, stockMovements,
                 <DashboardCard
                     title="Mouvements Récents"
                     icon={<MoveIcon className="w-6 h-6" />}
-                    color="blue"
+                    color="teal"
                 >
                     {stockMovements.length > 0 ?
                         stockMovements.map(movement => <MovementItem key={movement.id} movement={movement} />) :

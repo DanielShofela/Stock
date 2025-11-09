@@ -73,14 +73,14 @@ const EditProductPage: React.FC<EditProductPageProps> = ({ product, onUpdateProd
     onUpdateProduct(updatedProduct);
   };
   
-  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const inputStyleSm = "w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm";
+  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
+  const inputStyleSm = "w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm";
 
   return (
     <div className="md:p-6">
       <div className="md:max-w-4xl md:mx-auto">
         <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm md:rounded-t-xl">
-          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
+          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-slate-100">
             <BackIcon className="w-6 h-6" />
           </button>
           <h1 className="text-xl font-bold text-gray-800">Modifier le produit</h1>
@@ -89,7 +89,7 @@ const EditProductPage: React.FC<EditProductPageProps> = ({ product, onUpdateProd
         <form className="p-4 space-y-6 md:bg-white md:p-6 md:shadow-sm md:rounded-b-xl" onSubmit={handleSubmit}>
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
               <h2 className="text-lg font-bold text-gray-800">Informations Générales</h2>
               <div>
                   <label htmlFor="name" className="block text-sm font-semibold text-gray-600 mb-2">Nom du produit *</label>
@@ -115,10 +115,10 @@ const EditProductPage: React.FC<EditProductPageProps> = ({ product, onUpdateProd
               </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
               <h2 className="text-lg font-bold text-gray-800">Variantes</h2>
               {variants.map((variant, index) => (
-                  <div key={variant.id} className="p-3 border border-gray-200 rounded-xl space-y-3 bg-gray-50/50">
+                  <div key={variant.id} className="p-3 border border-slate-200 rounded-xl space-y-3 bg-slate-50/50">
                       <p className="font-semibold text-gray-700">Variante #{index + 1}</p>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -139,7 +139,7 @@ const EditProductPage: React.FC<EditProductPageProps> = ({ product, onUpdateProd
               <p className="text-xs text-center text-gray-500">La gestion des niveaux de stock se fait sur la page de détail du produit.</p>
           </div>
           
-          <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/40">
+          <button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40">
             Enregistrer les modifications
           </button>
         </form>

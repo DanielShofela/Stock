@@ -103,7 +103,7 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
     <div className="md:p-6">
       <div className="md:max-w-4xl md:mx-auto">
         <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm md:rounded-t-2xl">
-          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
+          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-slate-100">
             <BackIcon className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-bold text-gray-800">Nouvelle Commande</h1>
@@ -144,7 +144,7 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
                       <option value="">Sélectionner un produit à ajouter</option>
                       {availableVariants.map(v => <option key={v.id} value={v.id}>{v.display}</option>)}
                   </select>
-                  <button type="button" onClick={handleAddItem} className="flex-shrink-0 bg-[#0076BC] text-white p-3 rounded-xl hover:bg-opacity-90 disabled:bg-gray-300" disabled={!selectedVariantId}>
+                  <button type="button" onClick={handleAddItem} className="flex-shrink-0 bg-teal-600 text-white p-3 rounded-xl hover:bg-opacity-90 disabled:bg-gray-300" disabled={!selectedVariantId}>
                       <PlusIcon className="w-5 h-5"/>
                   </button>
               </div>
@@ -188,13 +188,13 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
           
           <style>{`
               .input-style {
-                  width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #e5e7eb;
+                  width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #cbd5e1;
               }
-              .input-style:focus { outline: none; box-shadow: 0 0 0 2px #0076BC; }
+              .input-style:focus { outline: none; box-shadow: 0 0 0 2px #0d9488; }
               .input-style-sm {
-                  width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; font-size: 0.875rem;
+                  width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; font-size: 0.875rem;
               }
-              .input-style-sm:focus { outline: none; box-shadow: 0 0 0 2px #0076BC; }
+              .input-style-sm:focus { outline: none; box-shadow: 0 0 0 2px #0d9488; }
           `}</style>
         </form>
       </div>

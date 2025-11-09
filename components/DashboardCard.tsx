@@ -5,21 +5,21 @@ interface DashboardCardProps {
   title: string;
   value?: string;
   icon: React.ReactNode;
-  color: 'red' | 'orange' | 'blue' | 'green';
+  color: 'red' | 'orange' | 'teal' | 'green';
   children: React.ReactNode;
 }
 
 const colorClasses = {
   red: 'bg-red-50 text-red-600',
   orange: 'bg-orange-50 text-orange-600',
-  blue: 'bg-blue-50 text-blue-600',
+  teal: 'bg-teal-50 text-teal-600',
   green: 'bg-green-50 text-green-600',
 };
 
 
 const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, color, children }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200/80">
+    <div className="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="font-bold text-gray-700">{title}</h2>

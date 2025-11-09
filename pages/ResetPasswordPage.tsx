@@ -41,11 +41,13 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onSuccess }) => {
     setLoading(false);
   };
 
+  const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-100 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-sm mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-block bg-[#28a745] p-3 rounded-full mb-2">
+          <div className="inline-block bg-teal-600 p-3 rounded-full mb-2">
             <LeafIcon className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800">A-Cosmetic</h1>
@@ -73,7 +75,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onSuccess }) => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={inputStyle}
                         required
                         disabled={loading}
                         />
@@ -88,7 +90,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onSuccess }) => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={inputStyle}
                         required
                         disabled={loading}
                         />
@@ -97,7 +99,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onSuccess }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400"
+                        className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400"
                     >
                         {loading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
                     </button>

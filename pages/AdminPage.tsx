@@ -197,7 +197,7 @@ const AdminPage: React.FC = () => {
         setInviting(false);
     };
     
-    const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
+    const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
     
     const closeModal = () => setModalState({ type: null, user: null });
 
@@ -210,7 +210,7 @@ const AdminPage: React.FC = () => {
                 {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4" role="alert">{error}</div>}
                 {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4" role="alert">{success}</div>}
 
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200/80">
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
                     <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><PlusIcon className="w-5 h-5" />Créer un nouvel utilisateur</h2>
                     <form onSubmit={handleCreateUser} className="space-y-4">
                          <div className="md:flex gap-4 space-y-4 md:space-y-0">
@@ -227,14 +227,14 @@ const AdminPage: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                             <button type="submit" disabled={inviting} className="w-full md:w-auto bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-blue-700 disabled:bg-gray-400">
+                             <button type="submit" disabled={inviting} className="w-full md:w-auto bg-teal-600 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-teal-700 disabled:bg-gray-400">
                                 {inviting ? 'Création en cours...' : "Créer et inviter l'utilisateur"}
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200/80">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200">
                     <div className="p-6">
                         <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                           <UsersIcon className="w-5 h-5" />
@@ -244,7 +244,7 @@ const AdminPage: React.FC = () => {
                      {loading ? <p className="p-6 text-center text-gray-500">Chargement des utilisateurs...</p> : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm text-left">
-                                <thead className="bg-gray-50 border-y border-gray-200">
+                                <thead className="bg-slate-50 border-y border-slate-200">
                                     <tr>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider">Rôle</th>
@@ -252,15 +252,15 @@ const AdminPage: React.FC = () => {
                                         <th className="px-6 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200">
+                                <tbody className="divide-y divide-slate-200">
                                 {users.map(user => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
+                                    <tr key={user.id} className="hover:bg-slate-50">
                                         <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">{user.email}</td>
                                         <td className="px-6 py-4">
                                             <select 
                                                 value={user.role} 
                                                 onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                                                className="w-full max-w-xs p-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-full max-w-xs p-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                                             >
                                                 <option value="manager">Manager</option>
                                                 <option value="admin">Admin</option>
@@ -272,7 +272,7 @@ const AdminPage: React.FC = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button onClick={() => setModalState({ type: 'block', user })} className="font-semibold text-blue-600 hover:text-blue-800 mr-4">
+                                            <button onClick={() => setModalState({ type: 'block', user })} className="font-semibold text-teal-600 hover:text-teal-800 mr-4">
                                                 {(user.status ?? 'active') === 'blocked' ? 'Débloquer' : 'Bloquer'}
                                             </button>
                                             <button onClick={() => setModalState({ type: 'delete', user })} className="font-semibold text-red-600 hover:text-red-800">

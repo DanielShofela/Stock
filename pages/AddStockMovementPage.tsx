@@ -49,12 +49,14 @@ const AddStockMovementPage: React.FC<AddStockMovementPageProps> = ({ products, w
         reference
     });
   };
+  
+  const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600";
 
   return (
     <div className="md:p-6">
        <div className="md:max-w-2xl md:mx-auto">
         <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm md:rounded-t-2xl">
-          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
+          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-slate-100">
             <BackIcon className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-bold text-gray-800">Nouveau Mouvement de Stock</h1>
@@ -69,7 +71,7 @@ const AddStockMovementPage: React.FC<AddStockMovementPageProps> = ({ products, w
               id="product" 
               value={selectedVariant}
               onChange={(e) => setSelectedVariant(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
+              className={inputStyle}
               required
             >
               <option value="" disabled>Sélectionner un produit</option>
@@ -89,7 +91,7 @@ const AddStockMovementPage: React.FC<AddStockMovementPageProps> = ({ products, w
               id="movementType" 
               value={movementType}
               onChange={(e) => setMovementType(e.target.value as MovementType)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
+              className={inputStyle}
             >
               <option value="in">Entrée (Achat / Retour)</option>
               <option value="out">Sortie (Vente)</option>
@@ -107,7 +109,7 @@ const AddStockMovementPage: React.FC<AddStockMovementPageProps> = ({ products, w
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
+                  className={inputStyle}
                   required
               />
           </div>
@@ -120,13 +122,13 @@ const AddStockMovementPage: React.FC<AddStockMovementPageProps> = ({ products, w
               placeholder="Ex: Commande Fournisseur #123" 
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0076BC]" 
+              className={inputStyle} 
             />
           </div>
           
           <button
               type="submit"
-              className="w-full bg-[#0076BC] text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0076BC] transition-all duration-300 shadow-lg shadow-[#0076BC]/30"
+              className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-600 transition-all duration-300 shadow-lg shadow-teal-600/30"
             >
               Enregistrer le mouvement
           </button>

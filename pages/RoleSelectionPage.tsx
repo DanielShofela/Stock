@@ -15,9 +15,9 @@ const RoleCard: React.FC<{
 }> = ({ icon, title, onClick }) => (
     <button
         onClick={onClick}
-        className="w-full p-6 bg-white rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="w-full p-6 bg-white rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
     >
-        <div className="w-16 h-16 mx-auto bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
+        <div className="w-16 h-16 mx-auto bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4">
             {icon}
         </div>
         <h2 className="text-lg font-bold text-gray-800">{title}</h2>
@@ -27,7 +27,7 @@ const RoleCard: React.FC<{
 
 const RoleSelectionPage: React.FC<RoleSelectionPageProps> = ({ onSelectRole }) => {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col justify-center items-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-100 flex flex-col justify-center items-center p-4">
             <div className="w-full max-w-sm mx-auto text-center">
                 <div className="inline-block bg-green-500 p-3 rounded-full mb-2">
                     <LeafIcon className="w-8 h-8 text-white" />

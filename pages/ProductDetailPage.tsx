@@ -27,7 +27,7 @@ const getStockStatus = (stockLevel: StockLevel) => {
 };
 
 const StatCard: React.FC<{label: string, value: string | number | undefined}> = ({ label, value }) => (
-    <div className="bg-gray-50 p-2 rounded-lg text-center">
+    <div className="bg-slate-50 p-2 rounded-lg text-center">
         <p className="text-xs text-gray-500">{label}</p>
         <p className="text-md font-bold text-gray-800">{value ?? 'N/A'}</p>
     </div>
@@ -146,10 +146,10 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
 
   return (
     <>
-      <div className="bg-[#F5F5F5] min-h-screen md:p-6">
+      <div className="bg-slate-100 min-h-screen md:p-6">
         <div className="md:max-w-4xl md:mx-auto">
           <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm md:rounded-t-2xl">
-            <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
+            <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-slate-100">
               <BackIcon className="w-6 h-6" />
             </button>
             <div className="flex-1">
@@ -157,7 +157,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
               <p className="text-sm text-gray-500">{product.sku}</p>
             </div>
             <div className="ml-auto flex gap-2">
-                <button onClick={() => onEdit(product)} className="text-gray-600 p-2 rounded-full hover:bg-gray-100" aria-label="Modifier le produit">
+                <button onClick={() => onEdit(product)} className="text-gray-600 p-2 rounded-full hover:bg-slate-100" aria-label="Modifier le produit">
                     <PencilIcon className="w-6 h-6" />
                 </button>
                 <button onClick={() => setIsDeleteModalOpen(true)} className="text-red-500 p-2 rounded-full hover:bg-red-50" aria-label="Supprimer le produit">
@@ -167,11 +167,11 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
           </header>
           
           <div className="p-4 space-y-6 md:bg-white md:p-6 md:shadow-sm md:rounded-b-2xl">
-            <div className="bg-white rounded-2xl shadow-sm p-4 h-64 flex items-center justify-center md:bg-gray-100">
+            <div className="bg-white rounded-2xl shadow-sm p-4 h-64 flex items-center justify-center md:bg-slate-100 border border-slate-200">
                 <img src={product.images[0] || 'https://placehold.co/400x400/f5f5f5/cccccc?text=Image'} alt={product.name} className="max-w-full max-h-full object-contain" />
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm p-4">
+            <div className="bg-white rounded-2xl shadow-sm p-4 border border-slate-200">
                 <h2 className="text-md font-bold text-gray-800 mb-2">Description</h2>
                 <p className="text-sm text-gray-600">{product.description || "Aucune description fournie."}</p>
                 <div className="mt-4 flex justify-between items-center text-sm">
@@ -189,10 +189,10 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
                     const status = getStockStatus(stockInfo);
 
                     return (
-                        <div key={variant.id} className="bg-white rounded-2xl shadow-sm p-4">
+                        <div key={variant.id} className="bg-white rounded-2xl shadow-sm p-4 border border-slate-200">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                    <h3 className="font-bold text-[#0076BC]">{variant.variant_name}</h3>
+                                    <h3 className="font-bold text-teal-600">{variant.variant_name}</h3>
                                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${status.color}`}>{status.text}</span>
                                 </div>
                                 <span className="text-lg font-bold">{variant.price} FCFA</span>
@@ -214,7 +214,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
                                     </div>
                                 )}
                             </div>
-                            <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+                            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
                                 <button onClick={() => handleOpenModal(variant, 'in')} className="flex-1 bg-green-100 text-green-800 text-sm font-bold py-2 rounded-lg hover:bg-green-200 transition-colors">
                                     Entrée
                                 </button>

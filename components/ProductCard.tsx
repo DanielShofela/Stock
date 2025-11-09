@@ -24,8 +24,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen }) => {
   const status = getProductStatus(product);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-3 flex gap-3.5 border border-gray-200/80 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-      <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 p-1">
+    <div className="bg-white rounded-xl shadow-sm p-3 flex gap-3.5 border border-slate-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 p-1">
         <img src={product.images?.[0] || 'https://placehold.co/200x200/e2e8f0/e2e8f0'} alt={product.name} className="w-full h-full object-contain" />
       </div>
       <div className="flex-1 flex flex-col justify-between py-1">
@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onOpen }) => {
         </div>
         <div className="mt-2 flex items-center justify-between">
           <span className="text-sm font-semibold text-gray-700">Stock: <strong className="text-lg text-black">{totalStock}</strong></span>
-          <button onClick={() => onOpen(product)} className="px-4 py-1.5 rounded-lg text-white text-xs font-bold bg-blue-600 hover:bg-blue-700">Détails</button>
+          <button onClick={() => onOpen(product)} className="px-4 py-1.5 rounded-lg text-white text-xs font-bold bg-teal-600 hover:bg-teal-700">Détails</button>
         </div>
       </div>
     </div>

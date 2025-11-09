@@ -53,7 +53,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
     // The onAuthStateChange listener in App.tsx will handle the rest.
   };
 
-  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
   const loading = passwordLoading || logoutLoading;
 
 
@@ -66,20 +66,20 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
       <div className="md:max-w-2xl md:mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Mon Compte</h1>
         
-        <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-200/80">
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-slate-200">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-gray-100 text-gray-600">
+            <div className="p-3 rounded-full bg-slate-100 text-slate-600">
               <UserIcon className="w-8 h-8" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Connecté en tant que</p>
               <p className="font-semibold text-gray-800">{session.user.email}</p>
             </div>
-             {profile?.role && <span className="ml-auto text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full capitalize">{profile.role}</span>}
+             {profile?.role && <span className="ml-auto text-xs font-bold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full capitalize">{profile.role}</span>}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 mt-6 border border-gray-200/80">
+        <div className="bg-white rounded-xl shadow-sm p-6 mt-6 border border-slate-200">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Changer de mot de passe</h2>
           <form onSubmit={handlePasswordUpdate} className="space-y-4">
             {error && <div className="bg-red-100 border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert">{error}</div>}
@@ -114,7 +114,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-teal-700 shadow-md shadow-teal-500/30 disabled:bg-teal-400 disabled:cursor-not-allowed"
             >
               {passwordLoading ? (
                   <>

@@ -12,13 +12,13 @@ interface OrdersPageProps {
 
 const OrdersPage: React.FC<OrdersPageProps> = ({ orders, onNavigate }) => {
     return (
-        <div className="p-4 bg-[#F5F5F5] min-h-screen md:p-6">
+        <div className="p-4 bg-slate-100 min-h-screen md:p-6">
             <div className="md:max-w-4xl md:mx-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-xl font-bold text-gray-800">Commandes</h1>
                     <button
                         onClick={() => onNavigate('add-order')}
-                        className="flex items-center gap-2 bg-[#0076BC] text-white font-bold py-2 px-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 shadow-lg shadow-[#0076BC]/30 text-sm"
+                        className="flex items-center gap-2 bg-teal-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-opacity-90 transition-all duration-300 shadow-lg shadow-teal-600/30 text-sm"
                     >
                         <PlusIcon className="w-5 h-5" />
                         <span>Nouvelle Commande</span>

@@ -4,6 +4,7 @@ import type { Product } from '../types';
 import { SearchIcon } from '../components/icons/SearchIcon';
 import { BoxIcon } from '../components/icons/BoxIcon';
 import { PlusIcon } from '../components/icons/PlusIcon';
+import { ChevronDownIcon } from '../components/icons/ChevronDownIcon';
 
 interface ProductsListPageProps {
   products: Product[];
@@ -13,39 +14,65 @@ interface ProductsListPageProps {
 
 const ProductsListPage: React.FC<ProductsListPageProps> = ({ products, onSelectProduct, onAddClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  const categories = useMemo(() => {
+    const allCategories = products
+        .map(p => p.category)
+        .filter((c): c is string => !!c);
+    return ['Toutes les catégories', ...Array.from(new Set(allCategories))];
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) {
-      return products;
-    }
-    return products.filter(p =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [searchTerm, products]);
+    return products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const matchesCategory = !selectedCategory || p.category === selectedCategory;
+
+        return matchesSearch && matchesCategory;
+    });
+  }, [searchTerm, selectedCategory, products]);
 
   return (
     <div className="p-4 md:p-6 min-h-screen">
-      <div className="sticky top-0 bg-gray-50/80 backdrop-blur-sm py-3 z-10 -mx-4 px-4 md:-mx-6 md:px-6">
+      <div className="sticky top-0 bg-slate-50/80 backdrop-blur-sm py-3 z-10 -mx-4 px-4 md:-mx-6 md:px-6">
         <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Catalogue Produits</h1>
             <button
                 id="add-product-button"
                 onClick={onAddClick}
-                className="flex items-center gap-2 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md shadow-blue-500/30 text-sm"
+                className="flex items-center gap-2 bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 shadow-md shadow-teal-500/30 text-sm"
             >
                 <PlusIcon className="w-5 h-5" />
                 <span>Ajouter</span>
             </button>
         </div>
-        <div className="relative">
-          <input
-            className="w-full rounded-xl p-3 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Rechercher par nom ou SKU..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-grow">
+                <input
+                    className="w-full rounded-xl p-3 pl-10 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    placeholder="Rechercher par nom ou SKU..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                />
+                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            </div>
+            <div className="relative">
+                <select
+                    className="w-full sm:w-48 rounded-xl p-3 pr-10 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white"
+                    value={selectedCategory}
+                    onChange={e => setSelectedCategory(e.target.value)}
+                    aria-label="Filtrer par catégorie"
+                >
+                    {categories.map(cat => (
+                        <option key={cat} value={cat === 'Toutes les catégories' ? '' : cat}>
+                            {cat}
+                        </option>
+                    ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
         </div>
       </div>
       
@@ -64,7 +91,7 @@ const ProductsListPage: React.FC<ProductsListPageProps> = ({ products, onSelectP
             </div>
             {filteredProducts.length === 0 && (
                 <div className="text-center py-10 text-gray-500">
-                <p>Aucun produit ne correspond à votre recherche.</p>
+                <p>Aucun produit ne correspond à vos filtres.</p>
                 </div>
             )}
         </>

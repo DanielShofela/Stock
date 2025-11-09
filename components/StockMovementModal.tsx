@@ -61,7 +61,7 @@ const StockMovementModal: React.FC<StockMovementModalProps> = ({ isOpen, onClose
                             id="quantity"
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-600"
                             placeholder="ex: 10"
                             min="1"
                             required
@@ -75,7 +75,7 @@ const StockMovementModal: React.FC<StockMovementModalProps> = ({ isOpen, onClose
                             id="reference"
                             value={reference}
                             onChange={(e) => setReference(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0076BC]"
+                            className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-600"
                             placeholder="ex: BL-0012, Perte, etc."
                         />
                     </div>

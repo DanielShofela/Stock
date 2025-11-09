@@ -752,7 +752,7 @@ const App: React.FC = () => {
   
   if (loading) {
       return (
-        <div className="fixed inset-0 bg-gray-50/80 backdrop-blur-sm flex flex-col items-center justify-center z-[10000]">
+        <div className="fixed inset-0 bg-slate-50/80 backdrop-blur-sm flex flex-col items-center justify-center z-[10000]">
           <LoadingSpinner />
           <p className="mt-4 text-lg font-semibold text-gray-700">Chargement de vos données...</p>
         </div>
@@ -760,7 +760,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
        {showWalkthrough && (
           <WalkthroughGuide
               stepConfig={walkthroughSteps[walkthroughStep]}

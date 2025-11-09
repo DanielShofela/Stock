@@ -80,7 +80,7 @@ const ReportsPage: React.FC = () => {
                 m.reference || ''
             ]),
             theme: 'grid',
-            headStyles: { fillColor: [0, 118, 188] }, // #0076BC
+            headStyles: { fillColor: [13, 148, 136] }, // teal-600
         });
 
         doc.save(`rapport_mouvements_${startDate}_${endDate}.pdf`);
@@ -109,12 +109,12 @@ const ReportsPage: React.FC = () => {
     };
 
     return (
-        <div className="p-4 bg-[#F5F5F5] min-h-screen md:p-6">
+        <div className="p-4 bg-slate-100 min-h-screen md:p-6">
             <div className="md:max-w-2xl md:mx-auto">
                 <h1 className="text-xl font-bold text-gray-800 mb-4">Rapports & Exports</h1>
                 <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                        <div className="p-2 rounded-full bg-teal-100 text-teal-600">
                             <ChartBarIcon className="w-6 h-6" />
                         </div>
                         <h2 className="text-md font-bold text-gray-800">Générer un rapport de mouvements</h2>
@@ -138,11 +138,11 @@ const ReportsPage: React.FC = () => {
                         <span className="block text-sm font-semibold text-gray-600 mb-2">Format d'export</span>
                         <div className="flex gap-4">
                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="format" value="pdf" checked={format === 'pdf'} onChange={() => setFormat('pdf')} className="form-radio h-4 w-4 text-[#0076BC] focus:ring-[#0076BC]" />
+                                <input type="radio" name="format" value="pdf" checked={format === 'pdf'} onChange={() => setFormat('pdf')} className="form-radio h-4 w-4 text-teal-600 focus:ring-teal-600" />
                                 <span>PDF</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="format" value="csv" checked={format === 'csv'} onChange={() => setFormat('csv')} className="form-radio h-4 w-4 text-[#0076BC] focus:ring-[#0076BC]" />
+                                <input type="radio" name="format" value="csv" checked={format === 'csv'} onChange={() => setFormat('csv')} className="form-radio h-4 w-4 text-teal-600 focus:ring-teal-600" />
                                 <span>CSV</span>
                             </label>
                         </div>
@@ -151,7 +151,7 @@ const ReportsPage: React.FC = () => {
                     <button
                         onClick={handleExport}
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-2 bg-[#0076BC] text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0076BC] transition-all duration-300 shadow-lg shadow-[#0076BC]/30 disabled:bg-gray-400 disabled:shadow-none"
+                        className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-600 transition-all duration-300 shadow-lg shadow-teal-600/30 disabled:bg-gray-400 disabled:shadow-none"
                     >
                         {loading ? 'Génération...' : 'Générer et Exporter'}
                     </button>
@@ -160,12 +160,12 @@ const ReportsPage: React.FC = () => {
                             width: 100%;
                             padding: 0.75rem 1rem;
                             border-radius: 0.75rem;
-                            border: 1px solid #e5e7eb;
+                            border: 1px solid #cbd5e1;
                             transition: box-shadow 0.2s;
                         }
                         .input-style:focus {
                             outline: none;
-                            box-shadow: 0 0 0 2px #0076BC;
+                            box-shadow: 0 0 0 2px #0d9488;
                         }
                     `}</style>
                 </div>

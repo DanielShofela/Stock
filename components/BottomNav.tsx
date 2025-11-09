@@ -20,7 +20,7 @@ const NavItem: React.FC<{
     isActive: boolean;
     onClick: (page: Page) => void;
 }> = ({ id, page, label, icon, isActive, onClick }) => (
-    <button id={id} onClick={() => onClick(page)} className={`flex flex-col items-center justify-center w-full transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}>
+    <button id={id} onClick={() => onClick(page)} className={`flex flex-col items-center justify-center w-full transition-colors duration-200 ${isActive ? 'text-teal-600' : 'text-gray-500 hover:text-teal-600'}`}>
         {icon}
         <span className="text-xs mt-1 font-semibold">{label}</span>
     </button>
@@ -48,7 +48,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentPage, onNavigate }) => {
         />
         
         <div className="w-16 h-16 flex items-center justify-center">
-            <button id="add-stock-button" onClick={() => onNavigate('add-stock')} className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/50 transform -translate-y-4 hover:scale-110">
+            <button id="add-stock-button" onClick={() => onNavigate('add-stock')} className="w-14 h-14 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-teal-500/50 transform -translate-y-4 hover:scale-110">
                 <PlusIcon className="w-7 h-7" />
             </button>
         </div>

@@ -29,8 +29,8 @@ const NavItem: React.FC<{
         onClick={() => onClick(page)}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left transition-colors duration-200 ${
             isActive 
-            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
-            : 'text-gray-600 hover:bg-blue-50 hover:text-gray-900'
+            ? 'bg-teal-600 text-white shadow-md shadow-teal-500/30' 
+            : 'text-gray-600 hover:bg-teal-50 hover:text-gray-900'
         }`}
     >
         {React.cloneElement(icon as React.ReactElement, { className: 'w-6 h-6 flex-shrink-0' })}
@@ -40,7 +40,7 @@ const NavItem: React.FC<{
 
 const SideNav: React.FC<SideNavProps> = ({ currentPage, onNavigate, profile }) => {
   return (
-    <aside className="w-64 bg-white h-screen flex-col p-4 border-r border-gray-200 hidden md:flex sticky top-0">
+    <aside className="w-64 bg-white h-screen flex-col p-4 border-r border-slate-200 hidden md:flex sticky top-0">
       <div className="flex items-center gap-3 px-2 mb-8">
           <div className="bg-green-500 p-2.5 rounded-lg">
             <LeafIcon className="w-6 h-6 text-white" />

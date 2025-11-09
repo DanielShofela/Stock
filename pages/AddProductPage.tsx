@@ -91,14 +91,14 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ warehouses, onAddProduc
     onAddProduct(newProduct);
   };
   
-  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const inputStyleSm = "w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm";
+  const inputStyle = "w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
+  const inputStyleSm = "w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm";
 
   return (
     <div className="md:p-6">
       <div className="md:max-w-4xl md:mx-auto">
         <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm md:rounded-t-xl">
-          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-gray-100">
+          <button onClick={onBack} className="text-gray-600 p-2 rounded-full hover:bg-slate-100">
             <BackIcon className="w-6 h-6" />
           </button>
           <h1 className="text-xl font-bold text-gray-800">Ajouter un nouveau produit</h1>
@@ -107,7 +107,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ warehouses, onAddProduc
         <form className="p-4 space-y-6 md:bg-white md:p-6 md:shadow-sm md:rounded-b-xl" onSubmit={handleSubmit}>
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
               <h2 className="text-lg font-bold text-gray-800">Informations Générales</h2>
               <div>
                   <label htmlFor="name" className="block text-sm font-semibold text-gray-600 mb-2">Nom du produit *</label>
@@ -133,10 +133,10 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ warehouses, onAddProduc
               </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
               <h2 className="text-lg font-bold text-gray-800">Variantes & Stock Initial</h2>
               {variants.map((variant, index) => (
-                  <div key={variant.id} className="p-3 border border-gray-200 rounded-xl space-y-3 bg-gray-50/50">
+                  <div key={variant.id} className="p-3 border border-slate-200 rounded-xl space-y-3 bg-slate-50/50">
                       <p className="font-semibold text-gray-700">Variante #{index + 1}</p>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -160,7 +160,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ warehouses, onAddProduc
                         </div>
                   </div>
               ))}
-              <button type="button" onClick={handleAddVariant} className="w-full flex items-center justify-center gap-2 text-sm text-blue-600 font-semibold p-2 rounded-lg hover:bg-blue-50">
+              <button type="button" onClick={handleAddVariant} className="w-full flex items-center justify-center gap-2 text-sm text-teal-600 font-semibold p-2 rounded-lg hover:bg-teal-50">
                   <PlusIcon className="w-5 h-5" />
                   Ajouter une autre variante
               </button>
