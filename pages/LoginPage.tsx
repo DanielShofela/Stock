@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { UserRole } from '../types';
 import { LeafIcon } from '../components/icons/LeafIcon';
-import { GoogleIcon } from '../components/icons/GoogleIcon';
 import { EyeIcon } from '../components/icons/EyeIcon';
 import { EyeSlashIcon } from '../components/icons/EyeSlashIcon';
 
@@ -39,25 +38,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
         setLoading(false);
     };
     
-    const handleGoogleLogin = async () => {
-        setLoading(true);
-        setError(null);
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                queryParams: {
-                    access_type: 'offline',
-                    prompt: 'consent',
-                },
-                redirectTo: window.location.origin,
-            },
-        });
-        if (error) {
-            setError(error.message);
-            setLoading(false);
-        }
-    };
-
     const handlePasswordResetRequest = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -147,17 +127,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
                             
                             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
                                 {loading ? 'Connexion...' : 'Se connecter'}
-                            </button>
-
-                            <div className="relative flex py-2 items-center">
-                                <div className="flex-grow border-t border-gray-300"></div>
-                                <span className="flex-shrink mx-4 text-gray-500 text-sm">OU</span>
-                                <div className="flex-grow border-t border-gray-300"></div>
-                            </div>
-                            
-                            <button type="button" onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 bg-white text-gray-700 font-semibold py-3 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-200">
-                                <GoogleIcon className="w-6 h-6" />
-                                <span>Continuer avec Google</span>
                             </button>
                         </form>
                     )}
