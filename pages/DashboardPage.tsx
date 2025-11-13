@@ -37,6 +37,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ products, stockMovements,
             <div>
                 <p className="text-sm font-semibold text-gray-800">{movement.productName}</p>
                 <p className="text-xs text-gray-500">{movement.variantName} - {movement.sku}</p>
+                {movement.userEmail && <p className="text-xs text-gray-400">par {movement.userEmail}</p>}
             </div>
             <div className={`text-sm font-bold ${movement.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {movement.quantity > 0 ? `+${movement.quantity}` : movement.quantity}

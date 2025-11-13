@@ -187,12 +187,14 @@ const App: React.FC = () => {
     console.log("Database is empty, seeding initial data...");
 
     const userId = session.user.id;
+    const userEmail = session.user.email || 'system';
     const warehouseId = warehouses[0].id;
 
     // 2. Seed Products and Variants
     const productsToSeed = [
         {
             user_id: userId, name: 'Sérum Éclat Vitamine C', sku: 'SER-VITC', category: 'Sérums', images: ['https://placehold.co/400x400/FFF0E5/FF6B00?text=Sérum'],
+            created_by: userEmail, last_modified_by: userEmail,
             variants: [
                 { variant_name: '30ml', price: 3500, barcode: '370000000001', initial_quantity: 50, safety_stock: 10 },
                 { variant_name: '50ml', price: 5200, barcode: '370000000002', initial_quantity: 30, safety_stock: 5 },
@@ -200,12 +202,14 @@ const App: React.FC = () => {
         },
         {
             user_id: userId, name: 'Crème Hydratante Intense', sku: 'CRM-HYD', category: 'Crèmes', images: ['https://placehold.co/400x400/E5F4FF/0076BC?text=Crème'],
+            created_by: userEmail, last_modified_by: userEmail,
             variants: [
                 { variant_name: '50ml', price: 2800, barcode: '370000000003', initial_quantity: 100, safety_stock: 20 },
             ]
         },
         {
             user_id: userId, name: 'Masque Purifiant Argile', sku: 'MSQ-ARG', category: 'Masques', images: ['https://placehold.co/400x400/E8F5E9/4CAF50?text=Masque'],
+            created_by: userEmail, last_modified_by: userEmail,
             variants: [
                 { variant_name: '75ml', price: 2200, barcode: '370000000004', initial_quantity: 75, safety_stock: 15 },
             ]
@@ -246,6 +250,7 @@ const App: React.FC = () => {
             product_name_cache: newProduct.name,
             variant_name_cache: v.variant_name,
             sku_cache: newProduct.sku,
+            user_email_cache: userEmail,
         }));
         await supabase.from('stock_movements').insert(movementInserts);
     }
@@ -324,6 +329,8 @@ const App: React.FC = () => {
        description: p.description,
        category: p.category,
        images: Array.isArray(p.images) ? p.images.filter((img): img is string => typeof img === 'string') : [],
+       created_by: p.created_by,
+       last_modified_by: p.last_modified_by,
        variants: p.product_variants.map((v: any) => {
            return {
                id: v.id,
@@ -362,7 +369,8 @@ const App: React.FC = () => {
             quantity: m.quantity,
             type: m.movement_type,
             date: m.created_at || new Date().toISOString(),
-            reference: m.reference
+            reference: m.reference,
+            userEmail: m.user_email_cache,
         }));
         setStockMovements(formattedMovements);
     }
@@ -393,6 +401,7 @@ const App: React.FC = () => {
                 order_date: o.order_date,
                 total_amount: o.total_amount,
                 status: o.status,
+                created_by_user_email: o.created_by_user_email,
                 items: o.order_items.map((item: any) => ({
                     id: item.id,
                     order_id: item.order_id,
@@ -479,12 +488,21 @@ const App: React.FC = () => {
 
   // --- CRUD OPERATIONS ---
  const handleAddProduct = async (newProduct: Omit<Product, 'id'>) => {
-    if (!session?.user) return;
+    if (!session?.user?.email) return;
     const { name, sku, description, category, images, variants } = newProduct;
 
     const { data: productData, error: productError } = await supabase
         .from('products')
-        .insert({ user_id: session.user.id, name, sku, description, category, images })
+        .insert({ 
+            user_id: session.user.id, 
+            name, 
+            sku, 
+            description, 
+            category, 
+            images,
+            created_by: session.user.email,
+            last_modified_by: session.user.email,
+        })
         .select()
         .single();
     if (productError || !productData) {
@@ -530,7 +548,8 @@ const App: React.FC = () => {
             user_id: session.user.id,
             product_name_cache: name,
             variant_name_cache: v.variant_name,
-            sku_cache: sku
+            sku_cache: sku,
+            user_email_cache: session.user.email,
         }))
     ).filter(m => m.quantity > 0);
 
@@ -560,6 +579,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateProduct = async (updatedProduct: Product) => {
+    if (!session?.user?.email) return;
     const { variants, ...productInfo } = updatedProduct;
 
     const { error: productError } = await supabase
@@ -570,6 +590,7 @@ const App: React.FC = () => {
             description: productInfo.description,
             category: productInfo.category,
             images: productInfo.images,
+            last_modified_by: session.user.email,
         })
         .eq('id', productInfo.id);
 
@@ -601,7 +622,7 @@ const App: React.FC = () => {
   };
 
   const handleAddStockMovement = async (movement: { variantId: number, warehouseId: number, quantity: number, type: 'in' | 'out' | 'adjustment' | 'damaged' | 'sale', reference: string }) => {
-     if (!session?.user) return;
+     if (!session?.user?.email) return;
      const { variantId, warehouseId, quantity, type, reference } = movement;
 
     const { data: stockLevel, error: fetchError } = await supabase
@@ -640,7 +661,8 @@ const App: React.FC = () => {
             user_id: session.user.id,
             product_name_cache: productInfo?.name,
             variant_name_cache: variantInfo?.variant_name,
-            sku_cache: productInfo?.sku
+            sku_cache: productInfo?.sku,
+            user_email_cache: session.user.email,
         });
     if (insertError) console.error('Error logging movement:', insertError.message);
 
@@ -648,7 +670,7 @@ const App: React.FC = () => {
   };
   
     const handleAddOrder = async (order: { customerName: string; items: { variantId: number; quantity: number; price: number }[]; total: number }) => {
-        if (!session?.user || warehouses.length === 0) return;
+        if (!session?.user?.email || warehouses.length === 0) return;
         const { customerName, items, total } = order;
 
         // 1. Find or create customer
@@ -676,6 +698,7 @@ const App: React.FC = () => {
                 total_amount: total,
                 status: 'completed',
                 user_id: session.user.id,
+                created_by_user_email: session.user.email,
             })
             .select()
             .single();

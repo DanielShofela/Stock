@@ -58,6 +58,8 @@ export interface Product {
   category: string | null;
   images: string[];
   variants: ProductVariant[];
+  created_by?: string | null;
+  last_modified_by?: string | null;
 }
 
 export interface StockMovement {
@@ -69,6 +71,7 @@ export interface StockMovement {
   type: MovementType;
   date: string;
   reference: string | null;
+  userEmail?: string | null;
 }
 
 export type Warehouse = DB['public']['Tables']['warehouses']['Row'];
@@ -92,6 +95,7 @@ export interface Order {
   total_amount: number;
   status: OrderStatus;
   items: OrderItem[];
+  created_by_user_email?: string | null;
 }
 
 export interface Customer {

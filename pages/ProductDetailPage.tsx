@@ -226,6 +226,11 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
                     );
                 })}
             </div>
+            
+             <div className="text-xs text-gray-400 text-center space-y-1 pt-2">
+                {product.created_by && <p>Créé par : <span className="font-medium text-gray-500">{product.created_by}</span></p>}
+                {product.last_modified_by && <p>Dernière modification par : <span className="font-medium text-gray-500">{product.last_modified_by}</span></p>}
+            </div>
           </div>
         </div>
       </div>

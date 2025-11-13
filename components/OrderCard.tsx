@@ -22,6 +22,9 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
                     <p className="text-xs text-gray-500">
                         Commande du {new Date(order.order_date).toLocaleDateString('fr-FR')}
                     </p>
+                    {order.created_by_user_email && (
+                        <p className="text-xs text-gray-400">Par: {order.created_by_user_email}</p>
+                    )}
                 </div>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.classes}`}>
                     {status.text}
