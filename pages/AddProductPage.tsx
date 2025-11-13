@@ -166,7 +166,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ warehouses, onAddProduc
               </button>
           </div>
           
-          <button type="submit" className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg shadow-green-500/40">
+          <button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40">
             Enregistrer le produit
           </button>
         </form>

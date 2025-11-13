@@ -13,13 +13,25 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
+    const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'forgotPassword'>('signIn');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-    const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+    const [signUpSuccess, setSignUpSuccess] = useState(false);
+
+    const switchMode = (mode: 'signIn' | 'signUp' | 'forgotPassword') => {
+        setAuthMode(mode);
+        setError(null);
+        setForgotPasswordSuccess(false);
+        setSignUpSuccess(false);
+        setPassword('');
+        setConfirmPassword('');
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,6 +50,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
         setLoading(false);
     };
     
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            setError("Les mots de passe ne correspondent pas.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        setSignUpSuccess(false);
+
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+
+        if (error) {
+            setError(error.message);
+        } else {
+            setSignUpSuccess(true);
+        }
+        setLoading(false);
+    };
+    
     const handlePasswordResetRequest = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -45,7 +80,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
         setForgotPasswordSuccess(false);
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/reset-password`,
+            redirectTo: `${window.location.origin}/`,
         });
 
         if (error) {
@@ -57,6 +92,122 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
     };
 
     const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50";
+
+    const renderSignInForm = () => (
+         <form onSubmit={handleLogin} className="space-y-6">
+            <h2 className="text-xl font-bold text-center text-gray-700">
+                Connexion Espace <span className="capitalize">{selectedRole}</span>
+            </h2>
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
+
+            <div>
+                <label htmlFor="email-signin" className="block text-sm font-semibold text-gray-600 mb-2">Adresse e-mail</label>
+                <input type="email" id="email-signin" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" className={inputStyle} required disabled={loading} />
+            </div>
+            <div>
+                <label htmlFor="password-signin"className="block text-sm font-semibold text-gray-600 mb-2">Mot de passe</label>
+                <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} id="password-signin" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputStyle} required disabled={loading}/>
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-4 text-gray-500">
+                        {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                    </button>
+                </div>
+            </div>
+
+            <div className="text-right">
+                <button type="button" onClick={() => switchMode('forgotPassword')} className="text-sm font-semibold text-teal-600 hover:underline">
+                    Mot de passe oublié ?
+                </button>
+            </div>
+            
+            <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
+                {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+            <div className="text-center mt-4">
+                <span className="text-sm text-gray-600">Pas encore de compte ? </span>
+                <button type="button" onClick={() => switchMode('signUp')} className="text-sm font-semibold text-teal-600 hover:underline">
+                    Créer un compte
+                </button>
+            </div>
+        </form>
+    );
+
+    const renderSignUpForm = () => (
+        <form onSubmit={handleSignUp} className="space-y-6">
+            <h2 className="text-xl font-bold text-center text-gray-700">Créer un compte</h2>
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
+            
+            {signUpSuccess ? (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg" role="alert">
+                    Un e-mail de confirmation a été envoyé à <strong>{email}</strong>. Veuillez vérifier votre boîte de réception pour activer votre compte.
+                </div>
+            ) : (
+                <>
+                    <div>
+                        <label htmlFor="email-signup" className="block text-sm font-semibold text-gray-600 mb-2">Adresse e-mail</label>
+                        <input type="email" id="email-signup" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" className={inputStyle} required disabled={loading}/>
+                    </div>
+                    <div>
+                        <label htmlFor="password-signup" className="block text-sm font-semibold text-gray-600 mb-2">Mot de passe</label>
+                        <div className="relative">
+                            <input type={showPassword ? 'text' : 'password'} id="password-signup" value={password} onChange={e => setPassword(e.target.value)} placeholder="6+ caractères" className={inputStyle} required disabled={loading}/>
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-4 text-gray-500">
+                                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label htmlFor="confirm-password-signup" className="block text-sm font-semibold text-gray-600 mb-2">Confirmer le mot de passe</label>
+                        <div className="relative">
+                            <input type={showConfirmPassword ? 'text' : 'password'} id="confirm-password-signup" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputStyle} required disabled={loading}/>
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 px-4 text-gray-500">
+                                {showConfirmPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
+                        {loading ? 'Création...' : 'Créer mon compte'}
+                    </button>
+                </>
+            )}
+             <div className="text-center">
+                <span className="text-sm text-gray-600">Déjà un compte ? </span>
+                <button type="button" onClick={() => switchMode('signIn')} className="text-sm font-semibold text-teal-600 hover:underline">
+                    Se connecter
+                </button>
+            </div>
+        </form>
+    );
+    
+    const renderForgotPasswordForm = () => (
+         <form onSubmit={handlePasswordResetRequest} className="space-y-6">
+             <h2 className="text-xl font-bold text-center text-gray-700">Mot de passe oublié</h2>
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
+            {forgotPasswordSuccess ? (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg" role="alert">
+                    Si un compte existe pour {email}, un e-mail de réinitialisation a été envoyé.
+                </div>
+            ) : (
+                <>
+                    <p className="text-sm text-center text-gray-600">
+                        Entrez votre e-mail pour recevoir un lien de réinitialisation.
+                    </p>
+                    <div>
+                        <label htmlFor="email-forgot" className="block text-sm font-semibold text-gray-600 mb-2">Adresse e-mail</label>
+                        <input type="email" id="email-forgot" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" className={inputStyle} required disabled={loading}/>
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
+                        {loading ? 'Envoi...' : 'Envoyer le lien'}
+                    </button>
+                </>
+            )}
+            <div className="text-center">
+                <button type="button" onClick={() => switchMode('signIn')} className="text-sm font-semibold text-teal-600 hover:underline">
+                    Retour à la connexion
+                </button>
+            </div>
+        </form>
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-teal-100 flex flex-col justify-center items-center p-4">
@@ -70,66 +221,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ selectedRole }) => {
                 </div>
                 
                 <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8">
-                    {isForgotPassword ? (
-                        <form onSubmit={handlePasswordResetRequest} className="space-y-6">
-                             <h2 className="text-xl font-bold text-center text-gray-700">Mot de passe oublié</h2>
-                            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
-                            {forgotPasswordSuccess ? (
-                                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg" role="alert">
-                                    Si un compte existe pour {email}, un e-mail de réinitialisation a été envoyé.
-                                </div>
-                            ) : (
-                                <>
-                                    <p className="text-sm text-center text-gray-600">
-                                        Entrez votre e-mail pour recevoir un lien de réinitialisation.
-                                    </p>
-                                    <div>
-                                        <label htmlFor="email" className="block text-sm font-semibold text-gray-600 mb-2">Adresse e-mail</label>
-                                        <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" className={inputStyle} required disabled={loading}/>
-                                    </div>
-                                    <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
-                                        {loading ? 'Envoi...' : 'Envoyer le lien'}
-                                    </button>
-                                </>
-                            )}
-                            <div className="text-center">
-                                <button type="button" onClick={() => setIsForgotPassword(false)} className="text-sm font-semibold text-teal-600 hover:underline">
-                                    Retour à la connexion
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            <h2 className="text-xl font-bold text-center text-gray-700">
-                                Connexion Espace <span className="capitalize">{selectedRole}</span>
-                            </h2>
-                            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
-
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-semibold text-gray-600 mb-2">Adresse e-mail</label>
-                                <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" className={inputStyle} required disabled={loading} />
-                            </div>
-                            <div>
-                                <label htmlFor="password"className="block text-sm font-semibold text-gray-600 mb-2">Mot de passe</label>
-                                <div className="relative">
-                                    <input type={showPassword ? 'text' : 'password'} id="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputStyle} required disabled={loading}/>
-                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-4 text-gray-500">
-                                        {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="text-right">
-                                <button type="button" onClick={() => setIsForgotPassword(true)} className="text-sm font-semibold text-teal-600 hover:underline">
-                                    Mot de passe oublié ?
-                                </button>
-                            </div>
-                            
-                            <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-lg shadow-teal-500/40 disabled:bg-gray-400 disabled:shadow-none disabled:from-gray-400">
-                                {loading ? 'Connexion...' : 'Se connecter'}
-                            </button>
-                        </form>
-                    )}
+                    {authMode === 'signIn' && renderSignInForm()}
+                    {authMode === 'signUp' && renderSignUpForm()}
+                    {authMode === 'forgotPassword' && renderForgotPasswordForm()}
                 </div>
             </div>
         </div>

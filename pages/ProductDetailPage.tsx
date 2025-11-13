@@ -214,12 +214,12 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, warehous
                                     </div>
                                 )}
                             </div>
-                            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
-                                <button onClick={() => handleOpenModal(variant, 'in')} className="flex-1 bg-green-100 text-green-800 text-sm font-bold py-2 rounded-lg hover:bg-green-200 transition-colors">
-                                    Entrée
+                            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3">
+                                <button onClick={() => handleOpenModal(variant, 'in')} className="flex-1 bg-green-500 text-white text-sm font-bold py-2.5 rounded-lg hover:bg-green-600 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                                    Entrée de Stock
                                 </button>
-                                <button onClick={() => handleOpenModal(variant, 'out')} className="flex-1 bg-orange-100 text-orange-800 text-sm font-bold py-2 rounded-lg hover:bg-orange-200 transition-colors">
-                                    Sortie
+                                <button onClick={() => handleOpenModal(variant, 'out')} className="flex-1 bg-orange-500 text-white text-sm font-bold py-2.5 rounded-lg hover:bg-orange-600 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                                    Sortie de Stock
                                 </button>
                             </div>
                         </div>

@@ -182,7 +182,7 @@ const AddOrderPage: React.FC<AddOrderPageProps> = ({ products, customers, onAddO
               <p className="text-3xl font-bold text-gray-800">{total} FCFA</p>
           </div>
 
-          <button type="submit" className="w-full bg-[#009245] text-white font-bold py-3 px-4 rounded-xl hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009245] transition-all duration-300 shadow-lg shadow-[#009245]/30">
+          <button type="submit" className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 shadow-lg shadow-teal-600/30">
             Enregistrer la Commande
           </button>
           

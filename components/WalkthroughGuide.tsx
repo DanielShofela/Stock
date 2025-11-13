@@ -92,7 +92,7 @@ const WalkthroughGuide: React.FC<WalkthroughGuideProps> = ({ stepConfig, onNext,
             {!isLastStep ? <button onClick={onSkip} className="text-xs text-gray-500 hover:underline">Passer</button> : <div />}
             <button 
                 onClick={isLastStep ? onDone : onNext}
-                className="bg-[#0076BC] text-white font-bold py-2 px-4 rounded-lg text-sm"
+                className="bg-teal-600 text-white font-bold py-2 px-4 rounded-lg text-sm"
             >
                 {isLastStep ? 'Terminer' : 'Suivant'}
             </button>
