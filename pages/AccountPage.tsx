@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { UserIcon } from '../components/icons/UserIcon';
 import type { Profile } from '../types';
 import type { Page } from '../App';
+import InstallPWAButton from '../components/InstallPWAButton';
 
 
 interface AccountPageProps {
@@ -130,10 +131,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ session, profile, onNavigate 
         </div>
 
         <div className="mt-6">
+          <InstallPWAButton />
           <button
             onClick={handleLogout}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 disabled:bg-red-400 disabled:cursor-not-allowed"
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 disabled:bg-red-400 disabled:cursor-not-allowed"
           >
              {logoutLoading ? (
                   <>

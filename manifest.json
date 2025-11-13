@@ -1,0 +1,22 @@
+{
+  "short_name": "A-Cosmetic",
+  "name": "A-Cosmetic Stock Manager",
+  "description": "A responsive, mobile-first inventory management application for A-Cosmetic, designed to streamline stock tracking, sales, and reporting.",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#14B8A6"
+}
