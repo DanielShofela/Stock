@@ -182,91 +182,10 @@ const App: React.FC = () => {
     }
   }, [session, profile]);
 
-  const seedDatabase = async () => {
-    if (!session?.user || warehouses.length === 0) return;
-    console.log("Database is empty, seeding initial data...");
-
-    const userId = session.user.id;
-    const userEmail = session.user.email || 'system';
-    const warehouseId = warehouses[0].id;
-
-    // 2. Seed Products and Variants
-    const productsToSeed = [
-        {
-            user_id: userId, name: 'Sérum Éclat Vitamine C', sku: 'SER-VITC', category: 'Sérums', images: ['https://placehold.co/400x400/FFF0E5/FF6B00?text=Sérum'],
-            created_by: userEmail, last_modified_by: userEmail,
-            variants: [
-                { variant_name: '30ml', price: 3500, barcode: '370000000001', initial_quantity: 50, safety_stock: 10 },
-                { variant_name: '50ml', price: 5200, barcode: '370000000002', initial_quantity: 30, safety_stock: 5 },
-            ]
-        },
-        {
-            user_id: userId, name: 'Crème Hydratante Intense', sku: 'CRM-HYD', category: 'Crèmes', images: ['https://placehold.co/400x400/E5F4FF/0076BC?text=Crème'],
-            created_by: userEmail, last_modified_by: userEmail,
-            variants: [
-                { variant_name: '50ml', price: 2800, barcode: '370000000003', initial_quantity: 100, safety_stock: 20 },
-            ]
-        },
-        {
-            user_id: userId, name: 'Masque Purifiant Argile', sku: 'MSQ-ARG', category: 'Masques', images: ['https://placehold.co/400x400/E8F5E9/4CAF50?text=Masque'],
-            created_by: userEmail, last_modified_by: userEmail,
-            variants: [
-                { variant_name: '75ml', price: 2200, barcode: '370000000004', initial_quantity: 75, safety_stock: 15 },
-            ]
-        },
-    ];
-
-    for (const p of productsToSeed) {
-        const { variants, ...productData } = p;
-        const { data: newProduct, error: productError } = await supabase.from('products').insert(productData).select().single();
-        if (productError || !newProduct) { console.error('Error seeding product', p.name, productError); continue; }
-        
-        const variantInserts = variants.map(v => ({
-            product_id: newProduct.id,
-            variant_name: v.variant_name,
-            price: v.price,
-            barcode: v.barcode,
-        }));
-        const { data: newVariants, error: variantError } = await supabase.from('product_variants').insert(variantInserts).select();
-        if (variantError || !newVariants) { console.error('Error seeding variants for', p.name, variantError); continue; }
-
-        const stockLevelInserts = variants.map((v, i) => ({
-            variant_id: newVariants[i].id,
-            warehouse_id: warehouseId,
-            quantity: v.initial_quantity,
-            initial_quantity: v.initial_quantity,
-            safety_stock: v.safety_stock,
-            user_id: userId,
-        }));
-        await supabase.from('stock_levels').insert(stockLevelInserts);
-
-        const movementInserts = variants.map((v, i) => ({
-            variant_id: newVariants[i].id,
-            warehouse_id: warehouseId,
-            quantity: v.initial_quantity,
-            movement_type: 'in' as const,
-            reference: 'Stock initial',
-            user_id: userId,
-            product_name_cache: newProduct.name,
-            variant_name_cache: v.variant_name,
-            sku_cache: newProduct.sku,
-            user_email_cache: userEmail,
-        }));
-        await supabase.from('stock_movements').insert(movementInserts);
-    }
-    console.log("Finished seeding products.");
-  }
-
-
   const fetchInitialData = async () => {
     if (products.length > 0 && !loading) return; // Prevent re-fetching if data is already there
     setLoading(true);
     await fetchWarehouses(); // Must run first
-
-    const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true });
-    if (count === 0 && !error) {
-      await seedDatabase();
-    }
 
     await Promise.all([
       fetchProductsAndStock(),
